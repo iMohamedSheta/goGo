@@ -3,8 +3,8 @@ package bootstrap
 import (
 	"imohamedsheta/gocrud/config"
 	"imohamedsheta/gocrud/database"
-	"imohamedsheta/gocrud/enums"
 	"imohamedsheta/gocrud/pkg/cmd"
+	"imohamedsheta/gocrud/pkg/enums"
 	"imohamedsheta/gocrud/routes"
 	"log"
 	"net/http"

@@ -2,7 +2,7 @@ package support
 
 import (
 	"fmt"
-	"imohamedsheta/gocrud/enums"
+	"imohamedsheta/gocrud/pkg/enums"
 )
 
 // showHowToUse shows how to use the application

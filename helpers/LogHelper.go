@@ -2,7 +2,7 @@ package helpers
 
 import (
 	"fmt"
-	"imohamedsheta/gocrud/enums"
+	"imohamedsheta/gocrud/pkg/enums"
 )
 
 func LogError(err any) {

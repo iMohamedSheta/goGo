@@ -14,7 +14,7 @@ type Config struct {
 	store map[string]any
 }
 
-// Global instance
+// Global app config instance
 var AppConfig = &Config{store: make(map[string]any)}
 
 // Set a configuration value
@@ -49,12 +49,7 @@ func (c *Config) Get(key string) any {
 	panic("config key not found")
 }
 
-// func LoadAll() {
-// 	LoadAppConfig()
-// 	LoadDatabaseConfig()
-// }
-
-// env helper mimics Laravel's env()
+// Load configuration from environment variables
 func Env(key string, defaultValue ...any) any {
 	if value, exists := os.LookupEnv(key); exists {
 		return value
