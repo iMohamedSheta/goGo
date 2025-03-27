@@ -1,9 +1,10 @@
 package bootstrap
 
 import (
-	"imohamedsheta/gocrud/cmd"
+	"imohamedsheta/gocrud/config"
 	"imohamedsheta/gocrud/database"
 	"imohamedsheta/gocrud/enums"
+	"imohamedsheta/gocrud/pkg/cmd"
 	"imohamedsheta/gocrud/routes"
 	"log"
 	"net/http"
@@ -12,17 +13,21 @@ import (
 	"github.com/joho/godotenv"
 )
 
-/**
+/*
+*
 	This file is used to bootstrap the application.
-**/
+*
+*/
 
+// Load Application
 func Load() {
 	loadEnvConfig()
+	loadConfig()
 	loadDatabaseConnection()
-	loadApp()
 }
 
 func loadDatabaseConnection() {
+	// Connect to the database
 	database.Connect()
 }
 
@@ -36,16 +41,13 @@ func loadEnvConfig() {
 	log.Println(enums.Green.Value() + "Loaded .env file" + enums.Reset.Value())
 }
 
-// Start the HTTP server
-func startHttpServer() {
-	log.Println(enums.Green.Value() + "Starting HTTP server on :7777..." + enums.Reset.Value())
-	if err := http.ListenAndServe(":7777", routes.RegisterRoutes()); err != nil {
-		log.Fatal(enums.Red.Value() + err.Error() + enums.Reset.Value())
-	}
+func loadConfig() {
+	config.LoadDatabaseConfig()
+	config.LoadAppConfig()
 }
 
-func loadApp() {
-
+// Run the Application (CLI or HTTP server)
+func Run() {
 	// If the command is "serve" then we'll start the HTTP server
 	if len(os.Args) > 1 && os.Args[1] == "serve" {
 		startHttpServer()
@@ -53,4 +55,12 @@ func loadApp() {
 
 	// Otherwise, we'll run the CLI
 	cmd.Execute()
+}
+
+// Start the HTTP server
+func startHttpServer() {
+	log.Println(enums.Green.Value() + "Starting HTTP server on :7777..." + enums.Reset.Value())
+	if err := http.ListenAndServe(":7777", routes.RegisterRoutes()); err != nil {
+		log.Fatal(enums.Red.Value() + err.Error() + enums.Reset.Value())
+	}
 }

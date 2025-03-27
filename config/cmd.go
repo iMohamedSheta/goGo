@@ -9,6 +9,13 @@ import (
 /*
 Here we register all the commands that we want to use in our application
 */
-var RegisteredCommands = []*cobra.Command{
+var registeredCommands = []*cobra.Command{
 	migrationCmd.MigrateCommand,
+}
+
+/*
+GetRegisteredCommands returns all the registered commands
+*/
+func GetRegisteredCommands() []*cobra.Command {
+	return registeredCommands
 }

@@ -5,6 +5,11 @@ import (
 )
 
 func main() {
+
+	// load the application
 	bootstrap.Load()
-	App.Run()
+	// support.DD(config.AppConfig.Get("app"))
+	// run the application
+	bootstrap.Run()
+
 }

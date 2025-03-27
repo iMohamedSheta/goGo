@@ -3,7 +3,7 @@ package cmd
 import (
 	"fmt"
 	"imohamedsheta/gocrud/config"
-	"imohamedsheta/gocrud/enums"
+	"imohamedsheta/gocrud/pkg/support"
 	"os"
 
 	"github.com/spf13/cobra"
@@ -16,7 +16,7 @@ var rootCmd = &cobra.Command{
 	Long:  "A simple CLI tool for running application commands",
 	Run: func(cmd *cobra.Command, args []string) {
 		cmd.Help()
-		showHowToUse()
+		support.PrintHowToUseApp()
 	},
 }
 
@@ -27,7 +27,7 @@ func init() {
 
 // registerCommands registers all commands
 func registerCommands(root *cobra.Command) {
-	for _, cmd := range config.RegisteredCommands {
+	for _, cmd := range config.GetRegisteredCommands() {
 		root.AddCommand(cmd)
 	}
 }
@@ -40,11 +40,4 @@ func Execute() {
 		fmt.Println(err)
 		os.Exit(1)
 	}
-}
-
-// showHowToUse shows how to use the application
-func showHowToUse() {
-	fmt.Println("\n" + enums.Blue.Value() + "📌 Usage:" + enums.Reset.Value())
-	fmt.Println("  " + enums.Green.Value() + "▶ To start the server:    go run . serve" + enums.Reset.Value())
-	fmt.Println("  " + enums.Green.Value() + "▶ To run CLI commands:    go run . <command>" + enums.Reset.Value() + "\n")
 }

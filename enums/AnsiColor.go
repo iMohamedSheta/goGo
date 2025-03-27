@@ -1,16 +1,16 @@
 package enums
 
-type AnsiColor string
+type Color string
 
 // ANSI Color Codes
 const (
-	Reset  AnsiColor = "\033[0m"
-	Blue   AnsiColor = "\033[1;34m"
-	Green  AnsiColor = "\033[1;32m"
-	Yellow AnsiColor = "\033[1;33m"
-	Red    AnsiColor = "\033[1;31m"
+	Reset  Color = "\033[0m"
+	Blue   Color = "\033[1;34m"
+	Green  Color = "\033[1;32m"
+	Yellow Color = "\033[1;33m"
+	Red    Color = "\033[1;31m"
 )
 
-func (c AnsiColor) Value() string {
+func (c Color) Value() string {
 	return string(c)
 }
