@@ -23,7 +23,7 @@ import (
 func Load() {
 	loadEnvConfig()
 	loadConfig()
-	loadDatabaseConnection()
+	// loadDatabaseConnection()
 }
 
 func loadDatabaseConnection() {

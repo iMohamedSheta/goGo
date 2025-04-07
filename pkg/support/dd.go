@@ -8,9 +8,17 @@ import (
 )
 
 func DD(v ...any) {
+	Dump(v...)
+	Die()
+}
+
+func Dump(v ...any) {
 	for _, val := range v {
 		fmt.Println(formatOutput(val))
 	}
+}
+
+func Die() {
 	os.Exit(1)
 }
 

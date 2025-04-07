@@ -3,7 +3,7 @@ package cmd
 import (
 	"fmt"
 	"imohamedsheta/gocrud/config"
-	"imohamedsheta/gocrud/pkg/support"
+	s "imohamedsheta/gocrud/pkg/support"
 	"os"
 
 	"github.com/spf13/cobra"
@@ -16,7 +16,7 @@ var rootCmd = &cobra.Command{
 	Long:  "A simple CLI tool for running application commands",
 	Run: func(cmd *cobra.Command, args []string) {
 		cmd.Help()
-		support.PrintHowToUseApp()
+		s.PrintHowToUseApp()
 	},
 }
 
