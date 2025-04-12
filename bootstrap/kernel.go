@@ -38,7 +38,7 @@ func loadEnvConfig() {
 		log.Fatal(enums.Red.Value() + "Error loading .env file" + enums.Reset.Value())
 	}
 
-	log.Println(enums.Green.Value() + "Loaded .env file" + enums.Reset.Value())
+	log.Println(enums.Green.Value() + "Kernel: Loaded .env file" + enums.Reset.Value())
 }
 
 func loadConfig() {

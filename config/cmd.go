@@ -1,7 +1,7 @@
 package config
 
 import (
-	migrationCmd "imohamedsheta/gocrud/cmd/migration"
+	cmd "imohamedsheta/gocrud/cmd/example"
 
 	"github.com/spf13/cobra"
 )
@@ -10,7 +10,7 @@ import (
 Here we register all the commands that we want to use in our application
 */
 var registeredCommands = []*cobra.Command{
-	migrationCmd.MigrateCommand,
+	cmd.SayHelloCommand,
 }
 
 /*

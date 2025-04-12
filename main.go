@@ -2,8 +2,7 @@ package main
 
 import (
 	"imohamedsheta/gocrud/bootstrap"
-	"imohamedsheta/gocrud/pkg/session"
-	s "imohamedsheta/gocrud/pkg/support"
+	_ "imohamedsheta/gocrud/docs"
 )
 
 func main() {
@@ -12,8 +11,8 @@ func main() {
 	bootstrap.Load()
 	// support.DD(config.AppConfig.Get("app"))
 	// run the application
-	// bootstrap.Run()
+	bootstrap.Run()
 
-	s.DD(session.NewSession())
+	// s.DD(session.NewSession())
 
 }

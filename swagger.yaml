@@ -1,0 +1,67 @@
+basePath: /
+consumes:
+    - application/json
+host: localhost:7777
+info:
+    description: Documentation of our awesome API.
+    title: Web API documentation for goGo.
+    version: 1.0.0
+paths:
+    /todos:
+        get:
+            operationId: listTodos
+            tags:
+                - todos
+        post:
+            description: Create a new todo
+            operationId: createTodo
+            responses:
+                "201":
+                    $ref: '#/responses/Todo'
+                "422":
+                    $ref: '#/responses/ValidationError'
+                "500":
+                    $ref: '#/responses/InternalServerError'
+            tags:
+                - todos
+    /todos/{id}:
+        delete:
+            description: Delete a todo
+            operationId: deleteTodo
+            responses:
+                "200":
+                    $ref: '#/responses/Todo'
+                "401":
+                    $ref: '#/responses/Unauthorized'
+                "404":
+                    $ref: '#/responses/NotFound'
+                "422":
+                    $ref: '#/responses/ValidationError'
+                "500":
+                    $ref: '#/responses/InternalServerError'
+            tags:
+                - todos
+        get:
+            operationId: showTodo
+            tags:
+                - todos
+        put:
+            description: Update a todo
+            operationId: updateTodo
+            responses:
+                "200":
+                    $ref: '#/responses/Todo'
+                "422":
+                    $ref: '#/responses/ValidationError'
+                "500":
+                    $ref: '#/responses/InternalServerError'
+            tags:
+                - todos
+produces:
+    - application/json
+schemes:
+    - http https
+securityDefinitions:
+    basic:
+        type: basic
+swagger: "2.0"
