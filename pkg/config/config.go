@@ -15,7 +15,7 @@ type Config struct {
 }
 
 // Global app config instance
-var AppConfig = &Config{store: make(map[string]any)}
+var App = &Config{store: make(map[string]any)}
 
 // Set a configuration value
 func (c *Config) Set(key string, value any) {

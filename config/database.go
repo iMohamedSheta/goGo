@@ -3,7 +3,7 @@ package config
 import "imohamedsheta/gocrud/pkg/config"
 
 func LoadDatabaseConfig() {
-	config.AppConfig.Set("database", map[string]any{
+	config.App.Set("database", map[string]any{
 
 		// This is the default database connection should be valid connection to use.
 		"default": config.Env("DB_CONNECTION", "mysql"),
@@ -17,7 +17,7 @@ func LoadDatabaseConfig() {
 				"user":     config.Env("DB_USERNAME", "root"),
 				"pass":     config.Env("DB_PASSWORD", ""),
 				"database": config.Env("DB_DATABASE", "go"),
-				"charset":  "utf8",
+				"charset":  "utf8mb4",
 				"driver":   "mysql",
 			},
 

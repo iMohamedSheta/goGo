@@ -5,6 +5,7 @@ import (
 	"imohamedsheta/gocrud/database"
 	"imohamedsheta/gocrud/pkg/cmd"
 	"imohamedsheta/gocrud/pkg/enums"
+	"imohamedsheta/gocrud/pkg/logger"
 	"imohamedsheta/gocrud/routes"
 	"log"
 	"net/http"
@@ -23,7 +24,8 @@ import (
 func Load() {
 	loadEnvConfig()
 	loadConfig()
-	// loadDatabaseConnection()
+	loadDatabaseConnection()
+	logger.LoadLogger()
 }
 
 func loadDatabaseConnection() {
