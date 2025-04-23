@@ -13,8 +13,6 @@ func RegisterRoutes() *mux.Router {
 	apiRouter := router.PathPrefix("/api/v1").Subrouter().StrictSlash(true)
 	RegisterApiRoutes(apiRouter)
 
-	RegisterRadiusApiRoutes(apiRouter)
-
 	return router
 }
 

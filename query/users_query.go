@@ -90,19 +90,6 @@ func (users *usersTable) Update(user User) error {
 	return nil
 }
 
-func ComplicatedQueryWithJoins(columns ...string) (map[string]any, error) {
-
-	db := database.DB()
-
-	sql := `
-		SELECT users.id, users.name, users.email, users.created_at
-		FROM users
-		LEFT JOIN posts ON users.id = posts.user_id
-		LEFT JOIN comments ON users.id = comments.user_id
-	`
-
-}
-
 func getStructFieldNames(tableStruct any) []string {
 	var fieldNames []string
 

@@ -1,9 +1,12 @@
 package controllers
 
 import (
+	"encoding/json"
 	"fmt"
+	"imohamedsheta/gocrud/pkg/config"
+	"imohamedsheta/gocrud/pkg/logger"
+	"imohamedsheta/gocrud/query"
 	"net/http"
-	"os"
 	"strconv"
 
 	"github.com/gorilla/mux"
@@ -13,9 +16,29 @@ type TodoController struct {
 }
 
 func (c *TodoController) Index(w http.ResponseWriter, r *http.Request) {
-	message := "Welcome to the " + os.Getenv("APP_NAME") + " API"
+	users, err := query.UsersTable().Get()
 
-	w.Write([]byte(message))
+	if err != nil {
+		logger.Log().Error(err.Error())
+		errorResponse(w, "Error getting users")
+		return
+	}
+
+	message := "Welcome to the " + config.App.Get("app.name").(string) + " API"
+	response := map[string]any{
+		"users":   users,
+		"message": message,
+	}
+
+	responseJson, err := json.Marshal(response)
+
+	if err != nil {
+		logger.Log().Error(err.Error())
+		errorResponse(w, "Error marshalling users")
+		return
+	}
+
+	w.Write(responseJson)
 }
 
 func (c *TodoController) Show(w http.ResponseWriter, r *http.Request) {
@@ -43,4 +66,9 @@ func (c *TodoController) Update(w http.ResponseWriter, r *http.Request) {
 
 func (c *TodoController) Delete(w http.ResponseWriter, r *http.Request) {
 
+}
+
+func errorResponse(w http.ResponseWriter, message string) {
+	w.WriteHeader(http.StatusInternalServerError)
+	w.Write([]byte(message))
 }
