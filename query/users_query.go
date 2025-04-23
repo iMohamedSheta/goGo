@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"imohamedsheta/gocrud/database"
 	"imohamedsheta/gocrud/pkg/logger"
-	"reflect"
+	"imohamedsheta/gocrud/pkg/query"
 	"slices"
 	"strings"
 	"time"
@@ -33,7 +33,7 @@ func (u *usersTable) GetSql(columns ...string) string {
 		return "SELECT * FROM users"
 	}
 
-	validColumns, err := validateColumns(columns)
+	validColumns, err := query.ValidateColumns(User{}, columns)
 
 	if err != nil {
 		return ""
@@ -90,24 +90,9 @@ func (users *usersTable) Update(user User) error {
 	return nil
 }
 
-func getStructFieldNames(tableStruct any) []string {
-	var fieldNames []string
-
-	typ := reflect.TypeOf(tableStruct)
-
-	for i := 0; i < typ.NumField(); i++ {
-		column := typ.Field(i).Tag.Get("db")
-		if column != "" {
-			fieldNames = append(fieldNames, column)
-		}
-	}
-
-	return fieldNames
-}
-
 func validateColumns(columns []string) ([]string, error) {
 	var selectedColumns []string
-	allowed := getStructFieldNames(User{})
+	allowed := query.GetStructFieldNames(User{})
 
 	for _, column := range columns {
 		if slices.Contains(allowed, column) {

@@ -9,3 +9,4 @@
 5. [x] Routing using mux
 6. [x] Logger
 7. [x] Configuration
+8. [x] Validations
