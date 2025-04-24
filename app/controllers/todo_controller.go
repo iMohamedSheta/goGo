@@ -4,6 +4,8 @@ import (
 	"encoding/json"
 	"fmt"
 	"imohamedsheta/gocrud/app/enums"
+	"imohamedsheta/gocrud/app/models"
+	"imohamedsheta/gocrud/app/requests"
 	"imohamedsheta/gocrud/pkg/config"
 	"imohamedsheta/gocrud/pkg/logger"
 	"imohamedsheta/gocrud/pkg/validate"
@@ -79,7 +81,7 @@ func (c *TodoController) Show(w http.ResponseWriter, r *http.Request) {
 	w.Write([]byte(fmt.Sprintf("Show todo with ID: %d", id)))
 }
 
-func (c *TodoController) Create(w http.ResponseWriter, r *http.Request) {
+func (c *TodoController) CreateOld(w http.ResponseWriter, r *http.Request) {
 	var todo query.Todo
 
 	if err := json.NewDecoder(r.Body).Decode(&todo); err != nil {
@@ -122,6 +124,49 @@ func (c *TodoController) Create(w http.ResponseWriter, r *http.Request) {
 	todo.UpdatedAt = time.Now()
 
 	// Insert the todo into the database
+	if err := query.TodosTable().Insert(&todo); err != nil {
+		logger.Log().Error(err.Error())
+		errorResponse(w, "Failed to create todo")
+		return
+	}
+
+	// Return success response
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(map[string]interface{}{
+		"message": "Todo created successfully",
+	})
+}
+
+func (c *TodoController) Create(w http.ResponseWriter, r *http.Request) {
+	var req requests.CreateTodoRequest
+
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		logger.Log().Error(err.Error())
+		http.Error(w, "Invalid JSON format", http.StatusBadRequest)
+		return
+	}
+
+	// Validate request
+	ok, validationErrors := validate.ValidateRequest(&req)
+	if !ok {
+		w.WriteHeader(http.StatusBadRequest)
+		json.NewEncoder(w).Encode(map[string]interface{}{
+			"message": "Validation failed",
+			"errors":  validationErrors,
+		})
+		return
+	}
+
+	// Build todo model
+	todo := models.Todo{
+		Title:       req.Title,
+		Description: req.Description,
+		Status:      int8(enums.CANCELLED),
+		CreatedAt:   time.Now(),
+		UpdatedAt:   time.Now(),
+	}
+
+	// Insert into DB
 	if err := query.TodosTable().Insert(&todo); err != nil {
 		logger.Log().Error(err.Error())
 		errorResponse(w, "Failed to create todo")

@@ -1,24 +1,15 @@
 package query
 
 import (
-	"errors"
 	"fmt"
+	"imohamedsheta/gocrud/app/models"
 	"imohamedsheta/gocrud/database"
 	"imohamedsheta/gocrud/pkg/logger"
 	"imohamedsheta/gocrud/pkg/query"
-	"slices"
 	"strings"
-	"time"
 )
 
-type User struct {
-	ID        int       `json:"id" db:"id"`
-	Name      string    `json:"name" db:"name"`
-	Email     string    `json:"email" db:"email"`
-	CreatedAt time.Time `json:"created_at" db:"created_at"`
-}
-
-type usersTable []User
+type usersTable []models.User
 
 func UsersTable() *usersTable {
 	return &usersTable{}
@@ -33,7 +24,7 @@ func (u *usersTable) GetSql(columns ...string) string {
 		return "SELECT * FROM users"
 	}
 
-	validColumns, err := query.ValidateColumns(User{}, columns)
+	validColumns, err := query.ValidateColumns(models.User{}, columns)
 
 	if err != nil {
 		return ""
@@ -58,7 +49,7 @@ func (users *usersTable) Get(columns ...string) (*usersTable, error) {
 	return users, nil
 }
 
-func (users *usersTable) Insert(user User) error {
+func (users *usersTable) Insert(user models.User) error {
 	db := database.DB()
 
 	_, err := db.NamedExec(`
@@ -74,7 +65,7 @@ func (users *usersTable) Insert(user User) error {
 	return nil
 }
 
-func (users *usersTable) Update(user User) error {
+func (users *usersTable) Update(user models.User) error {
 	db := database.DB()
 
 	_, err := db.NamedExec(`
@@ -88,20 +79,4 @@ func (users *usersTable) Update(user User) error {
 	}
 
 	return nil
-}
-
-func validateColumns(columns []string) ([]string, error) {
-	var selectedColumns []string
-	allowed := query.GetStructFieldNames(User{})
-
-	for _, column := range columns {
-		if slices.Contains(allowed, column) {
-			selectedColumns = append(selectedColumns, column)
-		} else {
-			logger.Log().Error("Invalid column name: " + column)
-			return nil, errors.New("Invalid column name" + column)
-		}
-	}
-
-	return selectedColumns, nil
 }

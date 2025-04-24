@@ -2,23 +2,14 @@ package query
 
 import (
 	"fmt"
+	"imohamedsheta/gocrud/app/models"
 	"imohamedsheta/gocrud/database"
 	"imohamedsheta/gocrud/pkg/logger"
 	"imohamedsheta/gocrud/pkg/query"
 	"strings"
-	"time"
 )
 
-type Todo struct {
-	Id          *int      `json:"id" db:"id"`
-	Title       string    `json:"title" db:"title"`
-	Description string    `json:"description" db:"description"`
-	Status      int8      `json:"status" db:"status"`
-	CreatedAt   time.Time `json:"created_at" db:"created_at"`
-	UpdatedAt   time.Time `json:"updated_at" db:"updated_at"`
-}
-
-type todosTable []Todo
+type todosTable []models.Todo
 
 func TodosTable() *todosTable {
 	return &todosTable{}
@@ -30,7 +21,7 @@ func (t *todosTable) GetSql(columns ...string) (string, error) {
 		return "SELECT * FROM todos", nil
 	}
 
-	validColumns, err := query.ValidateColumns(&Todo{}, columns)
+	validColumns, err := query.ValidateColumns(&models.Todo{}, columns)
 
 	if err != nil {
 		return "", err
@@ -66,7 +57,7 @@ func (todos *todosTable) GetByIdSql(columns ...string) (string, error) {
 		return "SELECT * FROM todos WHERE id = ?", nil
 	}
 
-	validColumns, err := query.ValidateColumns(&Todo{}, columns)
+	validColumns, err := query.ValidateColumns(&models.Todo{}, columns)
 
 	if err != nil {
 		return "", err
@@ -97,7 +88,7 @@ func (todos *todosTable) GetById(id int, columns ...string) (*todosTable, error)
 	return todos, nil
 }
 
-func (todos *todosTable) Insert(todo *Todo) error {
+func (todos *todosTable) Insert(todo *models.Todo) error {
 	db := database.DB()
 
 	_, err := db.NamedExec(`
