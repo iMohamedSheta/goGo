@@ -8,7 +8,7 @@ import (
 )
 
 func Validate(data map[string]interface{}, rules map[string]string, messages map[string]string) (bool, map[string]string) {
-	validate := validator.New()
+	validate := Validator()
 	errors := make(map[string]string)
 
 	for field, rule := range rules {
@@ -35,7 +35,7 @@ func Validate(data map[string]interface{}, rules map[string]string, messages map
 }
 
 func ValidateRequest(r contracts.Validatable) (bool, map[string]string) {
-	validate := validator.New()
+	validate := Validator()
 
 	// Validate the struct
 	if err := validate.Struct(r); err != nil {

@@ -78,7 +78,11 @@ func loadValidation() {
 	validator := validate.Validator()
 
 	for tag, rule := range registeredRules {
-		validator.RegisterValidation(tag, rule)
+		err := validator.RegisterValidation(tag, rule)
+
+		if err != nil {
+			logger.Log().Error("Error registering validation rule: " + tag + ":  error: " + err.Error())
+		}
 	}
 }
 

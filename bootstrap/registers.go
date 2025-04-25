@@ -22,7 +22,7 @@ func loadConfig() {
 
 // Register new validations rules
 var registeredRules = map[string]validator.Func{
-	"unique": rules.Unique,
+	"unique_db": rules.Unique,
 }
 
 // Register new commands

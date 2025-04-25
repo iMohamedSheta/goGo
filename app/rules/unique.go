@@ -10,19 +10,21 @@ import (
 
 func Unique(fl validator.FieldLevel) bool {
 	db := database.DB()
-	param := fl.Param() // ex: "users,username"
-	parts := strings.Split(param, ",")
+	param := fl.Param() // ex: "users|username"
+	parts := strings.Split(param, "_")
 
 	if len(parts) != 2 {
+		logger.Log().Error("Invalid unique validator format, expected: table|column")
 		return false
 	}
 
-	tableName := parts[0]
-	columnName := parts[1]
+	tableName := strings.TrimSpace(parts[0])
+	columnName := strings.TrimSpace(parts[1])
 
-	// It can be sql injected but i will trust the user cause the user is the developer
-	// so he can add validation like this:
-	// unique=users,email
+	if tableName == "" || columnName == "" {
+		return false
+	}
+
 	query := "SELECT COUNT(*) FROM " + tableName + " WHERE " + columnName + " = ?"
 
 	var count int
@@ -32,6 +34,8 @@ func Unique(fl validator.FieldLevel) bool {
 		logger.Log().Error("error while checking unique constraint: " + err.Error())
 		return false
 	}
+
+	logger.Log().Info("the count is: " + string(count))
 
 	return count == 0
 }
