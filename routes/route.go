@@ -1,7 +1,7 @@
 package routes
 
 import (
-	"imohamedsheta/gocrud/helpers"
+	"imohamedsheta/gocrud/pkg/helpers"
 
 	"github.com/gorilla/mux"
 )

@@ -9,6 +9,7 @@ import (
 func RegisterApiRoutes(apiRouter *mux.Router) {
 
 	registerTodoRoutes(apiRouter)
+	registerAuthRoutes(apiRouter)
 }
 
 func registerTodoRoutes(apiRouter *mux.Router) {
@@ -44,4 +45,11 @@ func registerTodoRoutes(apiRouter *mux.Router) {
 	// 404: NotFound
 	// 401: Unauthorized
 	apiRouter.HandleFunc("/todos/{id}", todoController.Delete).Methods("DELETE")
+}
+
+func registerAuthRoutes(apiRouter *mux.Router) {
+	authController := controllers.AuthController{}
+
+	apiRouter.HandleFunc("/register", authController.Register).Methods("POST")
+
 }

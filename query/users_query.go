@@ -49,12 +49,12 @@ func (users *usersTable) Get(columns ...string) (*usersTable, error) {
 	return users, nil
 }
 
-func (users *usersTable) Insert(user models.User) error {
+func (users *usersTable) Insert(user *models.User) error {
 	db := database.DB()
 
 	_, err := db.NamedExec(`
-		INSERT INTO users (name, email, created_at)
-		VALUES (:name, :email, :created_at)
+		INSERT INTO users (username, email, password, first_name, last_name, created_at, updated_at)
+		VALUES (:username, :email, :password, :first_name, :last_name, :created_at, :updated_at)
 	`, user)
 
 	if err != nil {
