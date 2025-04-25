@@ -8,8 +8,9 @@ import (
 
 // Struct for standard JSON response
 type Response struct {
-	Message string `json:"message"`
-	Data    any    `json:"data,omitempty"`
+	Message   string `json:"message"`
+	Data      any    `json:"data,omitempty"`
+	ErrorCode string `json:"error_code,omitempty"`
 }
 
 // writes a JSON response with proper headers and error handling
@@ -33,12 +34,13 @@ func Json(w http.ResponseWriter, message string, data any, code int) {
 }
 
 func ServerErrorJson(w http.ResponseWriter) {
-	ErrorJson(w, "Server Error", http.StatusInternalServerError)
+	ErrorJson(w, "Internal Server Error", "server_error", http.StatusInternalServerError)
 }
 
-func ErrorJson(w http.ResponseWriter, message string, code int) {
+func ErrorJson(w http.ResponseWriter, message string, errorCode string, code int) {
 	resp := &Response{
-		Message: message,
+		ErrorCode: errorCode,
+		Message:   message,
 	}
 
 	w.Header().Set("Content-Type", "application/json")

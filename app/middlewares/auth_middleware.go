@@ -18,7 +18,7 @@ func AuthMiddleware() func(http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			authHeader := r.Header.Get("Authorization")
 			if authHeader == "" || !strings.HasPrefix(authHeader, "Bearer ") {
-				response.ErrorJson(w, "Missing or invalid Authorization header", http.StatusUnauthorized)
+				response.ErrorJson(w, "Missing or invalid Authorization header", "missing_auth_header", http.StatusUnauthorized)
 				return
 			}
 
@@ -27,14 +27,14 @@ func AuthMiddleware() func(http.Handler) http.Handler {
 			token := strings.TrimPrefix(authHeader, "Bearer ")
 			valid, err := jwt.Verify(token, secret)
 			if err != nil || !valid {
-				response.ErrorJson(w, "Invalid token", http.StatusUnauthorized)
+				response.ErrorJson(w, "Invalid token", "invalid_token", http.StatusUnauthorized)
 				return
 			}
 
 			jwtToken, err := jwt.DecodeJWT(token)
 			if err != nil {
 				logger.Log().Error(err.Error(), zap.String("token", token))
-				response.ErrorJson(w, "Invalid token", http.StatusUnauthorized)
+				response.ErrorJson(w, "Invalid token", "decode_token_error", http.StatusUnauthorized)
 				return
 			}
 
@@ -43,7 +43,7 @@ func AuthMiddleware() func(http.Handler) http.Handler {
 			if err != nil {
 				logger.Log().Error(err.Error(), zap.Any("jwt_token", jwtToken))
 
-				response.ErrorJson(w, "Invalid token", http.StatusUnauthorized)
+				response.ErrorJson(w, "Invalid token", "decode_token_error", http.StatusUnauthorized)
 				return
 			}
 

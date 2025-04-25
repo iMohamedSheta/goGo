@@ -18,15 +18,11 @@ import (
 type AuthController struct{}
 
 func (c *AuthController) Register(w http.ResponseWriter, r *http.Request) {
-	// Create a new user
-	// Generate new token
-	// Return token
-
 	var req requests.RegisterRequest
 
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 		logger.Log().Error(err.Error())
-		response.ErrorJson(w, "Invalid JSON format", http.StatusBadRequest)
+		response.ErrorJson(w, "Invalid JSON format", "invalid_request", http.StatusBadRequest)
 		return
 	}
 
