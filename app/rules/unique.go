@@ -20,6 +20,9 @@ func Unique(fl validator.FieldLevel) bool {
 	tableName := parts[0]
 	columnName := parts[1]
 
+	// It can be sql injected but i will trust the user cause the user is the developer
+	// so he can add validation like this:
+	// unique=users,email
 	query := "SELECT COUNT(*) FROM " + tableName + " WHERE " + columnName + " = ?"
 
 	var count int
