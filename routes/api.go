@@ -51,5 +51,6 @@ func registerAuthRoutes(apiRouter *mux.Router) {
 	authController := controllers.AuthController{}
 
 	apiRouter.HandleFunc("/register", authController.Register).Methods("POST")
+	apiRouter.HandleFunc("/login", authController.Login).Methods("POST")
 
 }

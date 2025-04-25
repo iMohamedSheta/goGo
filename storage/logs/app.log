@@ -86,3 +86,9 @@
 {"level":"info","ts":1745548500.0759628,"caller":"rules/unique.go:38","msg":"the count is: \u0001"}
 {"level":"info","ts":1745548524.5889647,"caller":"rules/unique.go:38","msg":"the count is: \u0001"}
 {"level":"info","ts":1745548524.5895693,"caller":"rules/unique.go:38","msg":"the count is: \u0001"}
+{"level":"info","ts":1745591618.909162,"caller":"rules/unique.go:38","msg":"the count is: \u0001"}
+{"level":"info","ts":1745591618.9099185,"caller":"rules/unique.go:38","msg":"the count is: \u0001"}
+{"level":"info","ts":1745591698.2730484,"caller":"rules/unique.go:38","msg":"the count is: \u0000"}
+{"level":"info","ts":1745591698.2730484,"caller":"rules/unique.go:38","msg":"the count is: \u0000"}
+{"level":"error","ts":1745596402.7695012,"caller":"query/query_builder.go:133","msg":"scannable dest type map with >1 columns (8) in result","stacktrace":"imohamedsheta/gocrud/query.(*QueryBuilder).Execute\n\tc:/laragon/www/GoCrudRestApi/query/query_builder.go:133\nmain.main\n\tc:/laragon/www/GoCrudRestApi/main.go:14\nruntime.main\n\tC:/Program Files/Go/src/runtime/proc.go:283"}
+{"level":"error","ts":1745596404.426451,"caller":"query/query_builder.go:133","msg":"scannable dest type map with >1 columns (8) in result","stacktrace":"imohamedsheta/gocrud/query.(*QueryBuilder).Execute\n\tc:/laragon/www/GoCrudRestApi/query/query_builder.go:133\nmain.main\n\tc:/laragon/www/GoCrudRestApi/main.go:14\nruntime.main\n\tC:/Program Files/Go/src/runtime/proc.go:283"}

@@ -83,3 +83,66 @@ func (c *AuthController) Register(w http.ResponseWriter, r *http.Request) {
 		"token": token,
 	}, http.StatusCreated)
 }
+
+func (controller *AuthController) Login(w http.ResponseWriter, r *http.Request) {
+	req := &requests.LoginRequest{}
+
+	if err := json.NewDecoder(r.Body).Decode(req); err != nil {
+		logger.Log().Error(err.Error())
+		response.ServerErrorJson(w)
+		return
+	}
+
+	ok, validationErrors := validate.ValidateRequest(req)
+
+	if !ok {
+		response.ValidationErrorJson(w, validationErrors)
+		return
+	}
+
+	result, err := query.Table("users").Where("username", "=", req.Username).First()
+
+	if err != nil {
+		logger.Log().Error(err.Error())
+		response.ServerErrorJson(w)
+		return
+	}
+
+	if result == nil {
+		response.ValidationErrorJson(w, map[string]string{
+			"username": "Invalid username",
+		})
+		return
+	}
+
+	if !encrypt.CheckPasswordHash(req.Password, result["password"].(string)) {
+		response.ValidationErrorJson(w, map[string]string{
+			"password": "Invalid password",
+		})
+		return
+	}
+
+	jwtPayload := map[string]any{
+		"username":  result["username"].(string),
+		"id":        result["id"].(int64),
+		"email":     result["email"].(string),
+		"firstName": result["first_name"].(string),
+		"lastName":  result["last_name"].(string),
+	}
+
+	jwtSecret, _ := config.App.Get("app.secret").(string)
+	jwtExpiry := time.Duration(config.App.Get("app.jwt_expiry").(int)) * time.Second
+
+	token, err := jwt.GenerateJWTToken(jwtPayload, jwtSecret, jwtExpiry)
+
+	if err != nil {
+		logger.Log().Error(err.Error())
+		response.ServerErrorJson(w)
+		return
+	}
+
+	response.Json(w, "Login successful", map[string]any{
+		"token":   token,
+		"payload": jwtPayload,
+	}, http.StatusOK)
+}
