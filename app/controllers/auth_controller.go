@@ -8,6 +8,7 @@ import (
 	"imohamedsheta/gocrud/pkg/encrypt"
 	"imohamedsheta/gocrud/pkg/jwt"
 	"imohamedsheta/gocrud/pkg/logger"
+	"imohamedsheta/gocrud/pkg/response"
 	"imohamedsheta/gocrud/pkg/validate"
 	"imohamedsheta/gocrud/query"
 	"net/http"
@@ -25,18 +26,14 @@ func (c *AuthController) Register(w http.ResponseWriter, r *http.Request) {
 
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 		logger.Log().Error(err.Error())
-		http.Error(w, "Invalid JSON format", http.StatusBadRequest)
+		response.ErrorJson(w, "Invalid JSON format", http.StatusBadRequest)
 		return
 	}
 
 	ok, validationErrors := validate.ValidateRequest(&req)
 
 	if !ok {
-		w.WriteHeader(http.StatusBadRequest)
-		json.NewEncoder(w).Encode(map[string]interface{}{
-			"message": "Validation failed",
-			"errors":  validationErrors,
-		})
+		response.ValidationErrorJson(w, validationErrors)
 		return
 	}
 
@@ -44,7 +41,7 @@ func (c *AuthController) Register(w http.ResponseWriter, r *http.Request) {
 
 	if err != nil {
 		logger.Log().Error(err.Error())
-		http.Error(w, "Internal server error", http.StatusInternalServerError)
+		response.ServerErrorJson(w)
 		return
 	}
 
@@ -60,7 +57,7 @@ func (c *AuthController) Register(w http.ResponseWriter, r *http.Request) {
 
 	if err := query.UsersTable().Insert(user); err != nil {
 		logger.Log().Error(err.Error())
-		http.Error(w, "Internal server error", http.StatusInternalServerError)
+		response.ServerErrorJson(w)
 		return
 	}
 
@@ -78,13 +75,11 @@ func (c *AuthController) Register(w http.ResponseWriter, r *http.Request) {
 
 	if err != nil {
 		logger.Log().Error(err.Error())
-		http.Error(w, "Internal server error", http.StatusInternalServerError)
+		response.ServerErrorJson(w)
 		return
 	}
 
-	w.WriteHeader(http.StatusCreated)
-	json.NewEncoder(w).Encode(map[string]interface{}{
-		"message": "User created successfully",
-		"token":   token,
-	})
+	response.Json(w, "User created successfully", map[string]any{
+		"token": token,
+	}, http.StatusCreated)
 }

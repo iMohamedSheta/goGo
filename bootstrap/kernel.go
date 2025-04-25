@@ -3,6 +3,7 @@ package bootstrap
 import (
 	"imohamedsheta/gocrud/database"
 	"imohamedsheta/gocrud/pkg/cmd"
+	"imohamedsheta/gocrud/pkg/config"
 	"imohamedsheta/gocrud/pkg/enums"
 	"imohamedsheta/gocrud/pkg/logger"
 	"imohamedsheta/gocrud/pkg/validate"
@@ -42,8 +43,13 @@ func Run() {
 
 // Start the HTTP server
 func startHttpServer() {
-	log.Println(enums.Green.Value() + "Starting HTTP server on :7777..." + enums.Reset.Value())
-	if err := http.ListenAndServe(":7777", routes.RegisterRoutes()); err != nil {
+
+	url := config.App.Get("app.url").(string)
+	port := config.App.Get("app.port").(string)
+
+	log.Println(enums.Green.Value() + "Starting HTTP server on http://" + url + ":" + port + " ..." + enums.Reset.Value())
+
+	if err := http.ListenAndServe(url+":"+port, routes.RegisterRoutes()); err != nil {
 		log.Fatal(enums.Red.Value() + err.Error() + enums.Reset.Value())
 	}
 }
