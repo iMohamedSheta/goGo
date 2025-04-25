@@ -10,3 +10,5 @@
 6. [x] Logger
 7. [x] Configuration
 8. [x] Validations
+9. [x] Custom Validation Rules
+10. [x] Requests that can be validated

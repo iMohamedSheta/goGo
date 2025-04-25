@@ -84,3 +84,5 @@
 {"level":"info","ts":1745548461.1863916,"caller":"rules/unique.go:38","msg":"the count is: \u0001"}
 {"level":"info","ts":1745548500.0754473,"caller":"rules/unique.go:38","msg":"the count is: \u0001"}
 {"level":"info","ts":1745548500.0759628,"caller":"rules/unique.go:38","msg":"the count is: \u0001"}
+{"level":"info","ts":1745548524.5889647,"caller":"rules/unique.go:38","msg":"the count is: \u0001"}
+{"level":"info","ts":1745548524.5895693,"caller":"rules/unique.go:38","msg":"the count is: \u0001"}
