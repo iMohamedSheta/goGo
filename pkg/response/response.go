@@ -33,11 +33,25 @@ func Json(w http.ResponseWriter, message string, data any, code int) {
 }
 
 func ServerErrorJson(w http.ResponseWriter) {
-	http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+	ErrorJson(w, "Server Error", http.StatusInternalServerError)
 }
 
 func ErrorJson(w http.ResponseWriter, message string, code int) {
-	http.Error(w, message, code)
+	resp := &Response{
+		Message: message,
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+
+	if err := json.NewEncoder(w).Encode(resp); err != nil {
+		logger.Log().Error("Failed to write response:  " + err.Error())
+
+		// If encoding the original response failed, send a fallback JSON error
+		ServerErrorJson(w)
+		return
+	}
+
+	w.WriteHeader(code)
 }
 
 func ValidationErrorJson(w http.ResponseWriter, validationErrors map[string]string) {

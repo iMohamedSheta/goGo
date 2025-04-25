@@ -35,7 +35,5 @@ func Unique(fl validator.FieldLevel) bool {
 		return false
 	}
 
-	logger.Log().Info("the count is: " + string(count))
-
 	return count == 0
 }

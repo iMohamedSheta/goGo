@@ -142,7 +142,7 @@ func (controller *AuthController) Login(w http.ResponseWriter, r *http.Request) 
 	}
 
 	response.Json(w, "Login successful", map[string]any{
-		"token":   token,
-		"payload": jwtPayload,
+		"token": token,
+		// "payload": jwtPayload,
 	}, http.StatusOK)
 }

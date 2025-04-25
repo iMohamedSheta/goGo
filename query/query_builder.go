@@ -43,7 +43,7 @@ func Table(tableName string) *QueryBuilder {
 	}
 }
 
-func (qb *QueryBuilder) Select(fields []string) *QueryBuilder {
+func (qb *QueryBuilder) Select(fields ...string) *QueryBuilder {
 	qb.fields = fields
 	return qb
 }
@@ -122,7 +122,14 @@ func (qb *QueryBuilder) Paginate(page, perPage int) ([]map[string]interface{}, e
 
 func (qb *QueryBuilder) First() (map[string]interface{}, error) {
 	results, err := qb.Limit(1).Execute()
-	return results[0], err
+	if results != nil {
+		return results[0], err
+	}
+	return nil, err
+}
+
+func (qb *QueryBuilder) Get() ([]map[string]interface{}, error) {
+	return qb.Execute()
 }
 
 func (qb *QueryBuilder) GetValues() []any {

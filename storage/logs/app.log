@@ -92,3 +92,29 @@
 {"level":"info","ts":1745591698.2730484,"caller":"rules/unique.go:38","msg":"the count is: \u0000"}
 {"level":"error","ts":1745596402.7695012,"caller":"query/query_builder.go:133","msg":"scannable dest type map with >1 columns (8) in result","stacktrace":"imohamedsheta/gocrud/query.(*QueryBuilder).Execute\n\tc:/laragon/www/GoCrudRestApi/query/query_builder.go:133\nmain.main\n\tc:/laragon/www/GoCrudRestApi/main.go:14\nruntime.main\n\tC:/Program Files/Go/src/runtime/proc.go:283"}
 {"level":"error","ts":1745596404.426451,"caller":"query/query_builder.go:133","msg":"scannable dest type map with >1 columns (8) in result","stacktrace":"imohamedsheta/gocrud/query.(*QueryBuilder).Execute\n\tc:/laragon/www/GoCrudRestApi/query/query_builder.go:133\nmain.main\n\tc:/laragon/www/GoCrudRestApi/main.go:14\nruntime.main\n\tC:/Program Files/Go/src/runtime/proc.go:283"}
+{"level":"error","ts":1745604232.0938394,"caller":"query/query_builder.go:140","msg":"Error 1054 (42S22): Unknown column 'name' in 'field list'","stacktrace":"imohamedsheta/gocrud/query.(*QueryBuilder).Execute\n\tc:/laragon/www/GoCrudRestApi/query/query_builder.go:140\nimohamedsheta/gocrud/query.(*QueryBuilder).First\n\tc:/laragon/www/GoCrudRestApi/query/query_builder.go:124\nmain.main\n\tc:/laragon/www/GoCrudRestApi/main.go:14\nruntime.main\n\tC:/Program Files/Go/src/runtime/proc.go:283"}
+{"level":"error","ts":1745604289.6859622,"caller":"query/query_builder.go:140","msg":"Error 1054 (42S22): Unknown column 'name' in 'field list'","stacktrace":"imohamedsheta/gocrud/query.(*QueryBuilder).Execute\n\tc:/laragon/www/GoCrudRestApi/query/query_builder.go:140\nimohamedsheta/gocrud/query.(*QueryBuilder).First\n\tc:/laragon/www/GoCrudRestApi/query/query_builder.go:124\nmain.main\n\tc:/laragon/www/GoCrudRestApi/main.go:14\nruntime.main\n\tC:/Program Files/Go/src/runtime/proc.go:283"}
+{"level":"error","ts":1745604342.996528,"caller":"query/query_builder.go:143","msg":"Error 1054 (42S22): Unknown column 'name' in 'field list'","stacktrace":"imohamedsheta/gocrud/query.(*QueryBuilder).Execute\n\tc:/laragon/www/GoCrudRestApi/query/query_builder.go:143\nimohamedsheta/gocrud/query.(*QueryBuilder).First\n\tc:/laragon/www/GoCrudRestApi/query/query_builder.go:124\nmain.main\n\tc:/laragon/www/GoCrudRestApi/main.go:14\nruntime.main\n\tC:/Program Files/Go/src/runtime/proc.go:283"}
+{"level":"info","ts":1745605167.9080718,"caller":"controllers/auth_controller.go:106","msg":"Query took 594.7µs"}
+{"level":"info","ts":1745605270.435162,"caller":"controllers/auth_controller.go:107","msg":"Query executed","duration":0.0005703}
+{"level":"info","ts":1745605536.106841,"caller":"logger/help.go:9","msg":"Query took 936.7µs"}
+{"level":"info","ts":1745605584.262033,"caller":"logger/help.go:9","msg":"Query took 852.3921ms"}
+{"level":"info","ts":1745605623.717619,"caller":"logger/help.go:9","msg":"Query took 617.6µs"}
+{"level":"info","ts":1745605645.025577,"caller":"logger/help.go:9","msg":"Query took 850.2263ms"}
+{"level":"info","ts":1745605659.5043526,"caller":"logger/help.go:9","msg":"Query took 603µs"}
+{"level":"info","ts":1745605966.2376957,"caller":"logger/help.go:9","msg":"CheckPasswordHash took 853.0874ms"}
+{"level":"info","ts":1745606262.4063785,"caller":"logger/help.go:9","msg":"CheckPasswordHash took 853.8369ms"}
+{"level":"info","ts":1745606288.1940897,"caller":"logger/help.go:9","msg":"CheckPasswordHash took 852.1508ms"}
+{"level":"info","ts":1745606698.6701047,"caller":"logger/help.go:9","msg":"CheckPasswordHash took 57.2993ms"}
+{"level":"info","ts":1745606700.8952968,"caller":"logger/help.go:9","msg":"CheckPasswordHash took 53.0312ms"}
+{"level":"info","ts":1745612927.1214783,"caller":"logger/help.go:9","msg":"CheckPasswordHash took 54.6195ms"}
+{"level":"info","ts":1745612929.1806164,"caller":"logger/help.go:9","msg":"CheckPasswordHash took 52.4455ms"}
+{"level":"info","ts":1745612929.9679112,"caller":"logger/help.go:9","msg":"CheckPasswordHash took 53.529ms"}
+{"level":"info","ts":1745612930.5318959,"caller":"logger/help.go:9","msg":"CheckPasswordHash took 53.5878ms"}
+{"level":"info","ts":1745612931.1113944,"caller":"logger/help.go:9","msg":"CheckPasswordHash took 54.4305ms"}
+{"level":"info","ts":1745612931.6613953,"caller":"logger/help.go:9","msg":"CheckPasswordHash took 53.5369ms"}
+{"level":"info","ts":1745612932.192531,"caller":"logger/help.go:9","msg":"CheckPasswordHash took 52.9403ms"}
+{"level":"info","ts":1745612932.8810008,"caller":"logger/help.go:9","msg":"CheckPasswordHash took 53.3375ms"}
+{"level":"info","ts":1745612933.568787,"caller":"logger/help.go:9","msg":"CheckPasswordHash took 53.1337ms"}
+{"level":"info","ts":1745612934.2062879,"caller":"logger/help.go:9","msg":"CheckPasswordHash took 53.4989ms"}
+{"level":"info","ts":1745612934.7578986,"caller":"logger/help.go:9","msg":"CheckPasswordHash took 54.0512ms"}

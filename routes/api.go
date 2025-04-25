@@ -2,14 +2,18 @@ package routes
 
 import (
 	"imohamedsheta/gocrud/app/controllers"
+	"imohamedsheta/gocrud/app/middlewares"
 
 	"github.com/gorilla/mux"
 )
 
 func RegisterApiRoutes(apiRouter *mux.Router) {
 
-	registerTodoRoutes(apiRouter)
 	registerAuthRoutes(apiRouter)
+	authRouter := apiRouter
+
+	authRouter.Use(middlewares.AuthMiddleware())
+	registerTodoRoutes(authRouter)
 }
 
 func registerTodoRoutes(apiRouter *mux.Router) {
