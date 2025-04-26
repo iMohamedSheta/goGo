@@ -1,6 +1,9 @@
 package config
 
-import "imohamedsheta/gocrud/pkg/config"
+import (
+	"imohamedsheta/gocrud/pkg/config"
+	"time"
+)
 
 func LoadAppConfig() {
 	config.App.Set("app", map[string]any{
@@ -12,5 +15,10 @@ func LoadAppConfig() {
 		"debug":      config.Env("APP_DEBUG", true),
 		"secret":     config.Env("APP_SECRET", "hxdCTfhtkyJBVE01k8vvtaMHbzTmr401QqGl"),
 		"jwt_expiry": config.Env("APP_JWT_EXPIRY", 120),
+		"auth": map[string]any{
+			"type":                 "jwt",
+			"access_token_expiry":  15 * time.Minute,
+			"refresh_token_expiry": 168 * time.Hour,
+		},
 	})
 }

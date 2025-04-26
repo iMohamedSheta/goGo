@@ -58,42 +58,6 @@ func GenerateJWTToken(payload map[string]any, secret string, expirationTime time
 	return token, nil
 }
 
-// GenerateRefreshToken generates a refresh token with user data (long expiration time)
-func GenerateRefreshToken(payload map[string]any, secret string, expirationTime time.Duration) (string, error) {
-	// JWT Header
-	header := JWTHeader{
-		Alg:  "HS256", // HMAC-SHA256 is the default algorithm and the only one supported
-		Type: "JWT",
-	}
-
-	// Add standard claims like 'iat' (issued at) and 'exp' (expiration)
-	payload["iat"] = time.Now().Unix()
-	// Set refresh token expiration (e.g., 7 days)
-	payload["exp"] = time.Now().Add(expirationTime).Unix()
-
-	// Encode Header and Payload
-	encodedHeader, err := encodeToBase64(header)
-	if err != nil {
-		return "", err
-	}
-
-	encodedPayload, err := encodeToBase64(payload)
-	if err != nil {
-		return "", err
-	}
-
-	// Create the Signature
-	message := encodedHeader + "." + encodedPayload
-	signature, err := signHMAC256(message, secret)
-	if err != nil {
-		return "", err
-	}
-
-	// Build the final JWT refresh token
-	refreshToken := encodedHeader + "." + encodedPayload + "." + signature
-	return refreshToken, nil
-}
-
 // Get allows accessing any key from JWT payload dynamically
 func (jwt *JWT) Get(key string) (any, error) {
 	value, exists := jwt.Payload[key]
@@ -101,6 +65,10 @@ func (jwt *JWT) Get(key string) (any, error) {
 		return nil, fmt.Errorf("key '%s' not found in JWT payload", key)
 	}
 	return value, nil
+}
+
+func (jwt *JWT) Set(key string, value any) {
+	jwt.Payload[key] = value
 }
 
 func Verify(token string, secret string) (bool, error) {

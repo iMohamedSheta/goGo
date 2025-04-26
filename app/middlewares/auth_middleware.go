@@ -3,14 +3,13 @@ package middlewares
 import (
 	"context"
 	"imohamedsheta/gocrud/app/enums"
-	"imohamedsheta/gocrud/pkg/config"
-	"imohamedsheta/gocrud/pkg/jwt"
+	"imohamedsheta/gocrud/pkg/auth"
 	"imohamedsheta/gocrud/pkg/logger"
 	"imohamedsheta/gocrud/pkg/response"
 	"net/http"
 	"strings"
 
-	"go.uber.org/zap"
+	"go.uber.org/zap/zapcore"
 )
 
 func AuthMiddleware() func(http.Handler) http.Handler {
@@ -22,31 +21,24 @@ func AuthMiddleware() func(http.Handler) http.Handler {
 				return
 			}
 
-			secret := config.App.Get("app.secret").(string)
-
 			token := strings.TrimPrefix(authHeader, "Bearer ")
-			valid, err := jwt.Verify(token, secret)
-			if err != nil || !valid {
-				response.ErrorJson(w, "Invalid token", "invalid_token", http.StatusUnauthorized)
-				return
-			}
 
-			jwtToken, err := jwt.DecodeJWT(token)
+			// Validate the access token
+			jwtToken, err := auth.ValidateAuthToken(token, auth.AccessToken)
 			if err != nil {
-				logger.Log().Error(err.Error(), zap.String("token", token))
-				response.ErrorJson(w, "Invalid token", "decode_token_error", http.StatusUnauthorized)
+				response.ErrorJson(w, err.Error(), "invalid_token", http.StatusUnauthorized)
 				return
 			}
 
+			// Now you have the decoded JWT token, and you can retrieve the user_id or other information
 			userID, err := jwtToken.Get("user_id")
-
-			if err != nil {
-				logger.Log().Error(err.Error(), zap.Any("jwt_token", jwtToken))
-
+			if err != nil || userID == nil {
 				response.ErrorJson(w, "Invalid token", "decode_token_error", http.StatusUnauthorized)
+				logger.Log().Error(err.Error(), zapcore.Field{Key: "user_id", String: userID.(string)})
 				return
 			}
 
+			// Set user_id in the request context for use in downstream handlers
 			ctx := context.WithValue(r.Context(), enums.ContextKeyUserId, userID)
 			next.ServeHTTP(w, r.WithContext(ctx))
 		})

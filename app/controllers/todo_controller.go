@@ -8,6 +8,7 @@ import (
 	"imohamedsheta/gocrud/app/requests"
 	"imohamedsheta/gocrud/pkg/config"
 	"imohamedsheta/gocrud/pkg/logger"
+	"imohamedsheta/gocrud/pkg/response"
 	"imohamedsheta/gocrud/pkg/validate"
 	"imohamedsheta/gocrud/query"
 	"net/http"
@@ -46,8 +47,17 @@ func (c *TodoController) UsersIndex(w http.ResponseWriter, r *http.Request) {
 }
 
 func (c *TodoController) Index(w http.ResponseWriter, r *http.Request) {
+	userIDRaw := r.Context().Value(enums.ContextKeyUserId)
+	userID, ok := userIDRaw.(float64)
+
+	if !ok {
+		errorResponse(w, "Invalid user id or missing in context")
+		return
+	}
+
 	todo := &models.Todo{
 		Title:       "todo number 2",
+		UserId:      int64(userID),
 		Description: "this is the todo number 2",
 		Status:      uint8(enums.IN_PROGRESS),
 		CreatedAt:   time.Now(),
@@ -55,15 +65,13 @@ func (c *TodoController) Index(w http.ResponseWriter, r *http.Request) {
 	}
 
 	err := query.TodosTable().Insert(todo)
-
 	if err != nil {
 		logger.Log().Error(err.Error())
 		errorResponse(w, err.Error())
-
 		return
 	}
 
-	w.Write([]byte("Todo created"))
+	response.Json(w, "Todo created successfully", todo, http.StatusCreated)
 }
 
 func (c *TodoController) Show(w http.ResponseWriter, r *http.Request) {

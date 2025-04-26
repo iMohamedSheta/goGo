@@ -92,8 +92,8 @@ func (todos *todosTable) Insert(todo *models.Todo) error {
 	db := database.DB()
 
 	_, err := db.NamedExec(`
-		INSERT INTO todos (title, description, status, created_at, updated_at)
-		VALUES (:title, :description, :status, :created_at, :updated_at)
+		INSERT INTO todos (title, user_id, description, status, created_at, updated_at)
+		VALUES (:title, :user_id, :description, :status, :created_at, :updated_at)
 	`, todo)
 
 	if err != nil {

@@ -20,6 +20,7 @@ func Json(w http.ResponseWriter, message string, data any, code int) {
 		Data:    data,
 	}
 
+	w.WriteHeader(code)
 	w.Header().Set("Content-Type", "application/json")
 
 	if err := json.NewEncoder(w).Encode(resp); err != nil {
@@ -29,8 +30,6 @@ func Json(w http.ResponseWriter, message string, data any, code int) {
 		ServerErrorJson(w)
 		return
 	}
-
-	w.WriteHeader(code)
 }
 
 func ServerErrorJson(w http.ResponseWriter) {
@@ -43,6 +42,7 @@ func ErrorJson(w http.ResponseWriter, message string, errorCode string, code int
 		Message:   message,
 	}
 
+	w.WriteHeader(code)
 	w.Header().Set("Content-Type", "application/json")
 
 	if err := json.NewEncoder(w).Encode(resp); err != nil {
@@ -52,8 +52,6 @@ func ErrorJson(w http.ResponseWriter, message string, errorCode string, code int
 		ServerErrorJson(w)
 		return
 	}
-
-	w.WriteHeader(code)
 }
 
 func ValidationErrorJson(w http.ResponseWriter, validationErrors map[string]string) {
