@@ -9,17 +9,18 @@ import (
 // Define a new custom type that embeds mux.Router
 type Router struct {
 	*mux.Router
-	routeMiddleware map[string][]mux.MiddlewareFunc
-	groups          map[string]*Router // <-- track groups
 }
 
-// Create a new instance of Router
-func New() *Router {
-	return &Router{
-		Router:          mux.NewRouter(),
-		routeMiddleware: make(map[string][]mux.MiddlewareFunc),
-		groups:          make(map[string]*Router),
+var router *Router
+
+// return the router instance
+func Instance() *Router {
+	if router == nil {
+		router = &Router{
+			Router: mux.NewRouter(),
+		}
 	}
+	return router
 }
 
 // Define a custom Get method on the Router type
@@ -63,27 +64,9 @@ func (r *Router) Group(name string, path string, middleware []mux.MiddlewareFunc
 
 	// Create a new Router instance for the group, tracking middleware
 	group := &Router{
-		Router:          groupRouter,
-		routeMiddleware: make(map[string][]mux.MiddlewareFunc),
-		groups:          make(map[string]*Router),
+		Router: groupRouter,
 	}
-
-	r.routeMiddleware[name] = middleware
-	r.groups[name] = group
 
 	// Pass the group router to the function to register routes
 	f(group)
-}
-
-func (r *Router) GetGroup(name string) *Router {
-	return r.groups[name]
-}
-
-// Method to retrieve middlewares applied to a route
-func (r *Router) GetMiddlewaresForRoute(path string) []mux.MiddlewareFunc {
-	return r.routeMiddleware[path]
-}
-
-func (r *Router) GetMiddlewaresWithGroup() map[string][]mux.MiddlewareFunc {
-	return r.routeMiddleware
 }

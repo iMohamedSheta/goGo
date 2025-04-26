@@ -22,7 +22,7 @@ import (
 // }
 
 func RegisterRoutes() *router.Router {
-	r := router.New()
+	r := router.Instance()
 
 	mainRoutes(r)
 
@@ -35,9 +35,9 @@ func RegisterRoutes() *router.Router {
 	return r
 }
 
-func mainRoutes(router *router.Router) {
+func mainRoutes(r *router.Router) {
 
-	router.Get("/routes", helpers.ListAllRoutes(router)).Name("listAllRoutes")
+	r.Get("/routes", helpers.ListAllRoutes(router.Instance())).Name("listAllRoutes")
 	// Register the "list all routes" endpoint
 	// router.HandleFunc("/routes", helpers.ListAllRoutes(router)).Methods("GET")
 }
