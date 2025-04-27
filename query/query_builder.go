@@ -1,6 +1,7 @@
 package query
 
 import (
+	"database/sql"
 	"fmt"
 	"imohamedsheta/gocrud/database"
 	"imohamedsheta/gocrud/pkg/logger"
@@ -8,16 +9,17 @@ import (
 )
 
 type QueryBuilder struct {
-	tableName string
-	joins     []Join
-	fields    []string
-	where     []string
-	orderBy   []string
-	groupBy   []string
-	having    []string
-	limit     int
-	offset    int
-	values    []any
+	tableName      string
+	joins          []Join
+	fields         []string
+	where          []string
+	orderBy        []string
+	groupBy        []string
+	having         []string
+	limit          int
+	offset         int
+	values         []any
+	updated_fields []string
 }
 
 type Join struct {
@@ -136,7 +138,83 @@ func (qb *QueryBuilder) GetValues() []any {
 	return qb.values
 }
 
-func (qb *QueryBuilder) Execute() ([]map[string]interface{}, error) {
+func (qb *QueryBuilder) InsertSql(data []map[string]interface{}) (string, []any, error) {
+	if len(data) == 0 {
+		return fmt.Sprintf("INSERT INTO %s DEFAULT VALUES", qb.tableName), nil, nil
+	}
+
+	// Get fields from the first record
+	fields := []string{}
+	for key := range data[0] {
+		fields = append(fields, key)
+	}
+
+	// Prepare values and placeholders
+	var values []any
+	placeholdersList := []string{}
+	for _, record := range data {
+		placeholders := []string{}
+		for _, field := range fields {
+			// Directly use the value from the record
+			values = append(values, record[field])
+			placeholders = append(placeholders, "?")
+		}
+		placeholdersList = append(placeholdersList, "("+strings.Join(placeholders, ", ")+")")
+	}
+
+	// Build the final query
+	query := fmt.Sprintf("INSERT INTO %s (%s) VALUES %s",
+		qb.tableName,
+		strings.Join(fields, ", "),
+		strings.Join(placeholdersList, ", "),
+	)
+
+	return query, values, nil
+}
+
+func (qb *QueryBuilder) Insert(data []map[string]interface{}) (sql.Result, error) {
+	db := database.DB()
+	query, values, err := qb.InsertSql(data)
+	if err != nil {
+		return nil, err
+	}
+
+	result, err := db.Exec(query, values...)
+	if err != nil {
+		return nil, err
+	}
+
+	return result, nil
+}
+
+func (qb *QueryBuilder) UpdateSql(data map[string]any) (string, []any, error) {
+	if len(data) == 0 {
+		return "", nil, fmt.Errorf("no data provided for update")
+	}
+
+	query := qb.UpdateBuild(data)
+
+	return query, qb.values, nil
+}
+
+func (qb *QueryBuilder) Update(data map[string]any) (sql.Result, error) {
+	db := database.DB()
+	query, values, err := qb.UpdateSql(data)
+
+	if err != nil {
+		return nil, err
+	}
+
+	result, err := db.Exec(query, values...)
+
+	if err != nil {
+		return nil, err
+	}
+
+	return result, nil
+}
+
+func (qb *QueryBuilder) Execute() ([]map[string]any, error) {
 	db := database.DB() // Get the database connection
 
 	query := qb.Build() // Build the SQL query string with bound values
@@ -150,18 +228,18 @@ func (qb *QueryBuilder) Execute() ([]map[string]interface{}, error) {
 	defer rows.Close() // Ensure that the rows are closed once the function exits
 
 	// all result rows
-	var results []map[string]interface{}
+	var results []map[string]any
 
 	// Get the column names from the result set (used for mapping results)
 	columns, err := rows.Columns()
 	if err != nil {
-		logger.Log().Error(err.Error()) // Log error if unable to retrieve columns
+		logger.Log().Error(err.Error())
 		return nil, err
 	}
 
 	// Prepare for scanning values into the result
-	values := make([]interface{}, len(columns))    // Actual values will be stored here
-	valuePtrs := make([]interface{}, len(columns)) // Need for rows.Scan to manipulate the values
+	values := make([]any, len(columns))    // Actual values will be stored here
+	valuePtrs := make([]any, len(columns)) // Need for rows.Scan to manipulate the values
 	for i := range values {
 		valuePtrs[i] = &values[i] // Point each valuePtr to returned value
 	}
@@ -175,7 +253,7 @@ func (qb *QueryBuilder) Execute() ([]map[string]interface{}, error) {
 		}
 
 		// the result is a map of column names to their values
-		result := make(map[string]interface{})
+		result := make(map[string]any)
 
 		for i, col := range columns {
 			currentValue := values[i] // Get the value for the current column
@@ -223,6 +301,33 @@ func (qb *QueryBuilder) Build() string {
 	}
 	if qb.offset != 0 {
 		sb.WriteString(fmt.Sprintf(" OFFSET %d", qb.offset))
+	}
+
+	return sb.String()
+}
+
+// Update builds the SQL query for an UPDATE statement
+func (qb *QueryBuilder) UpdateBuild(data map[string]any) string {
+	var sb strings.Builder
+
+	var updatedFields []string
+	var values []any
+
+	for field, value := range data {
+		updatedFields = append(updatedFields, fmt.Sprintf("%s = ?", field))
+		values = append(values, value)
+	}
+
+	qb.values = append(values, qb.values...)
+
+	sb.WriteString(fmt.Sprintf("UPDATE %s SET %s ", qb.tableName, strings.Join(updatedFields, ", ")))
+
+	if len(qb.where) > 0 {
+		sb.WriteString(" WHERE " + strings.Join(qb.where, " AND "))
+	}
+
+	if qb.limit != 0 {
+		sb.WriteString(fmt.Sprintf(" LIMIT %d", qb.limit))
 	}
 
 	return sb.String()
