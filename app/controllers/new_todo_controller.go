@@ -6,6 +6,8 @@ import (
 	"imohamedsheta/gocrud/query"
 	"net/http"
 	"strconv"
+
+	"github.com/gorilla/mux"
 )
 
 type TodoController struct{}
@@ -64,7 +66,28 @@ func (c *TodoController) Index(w http.ResponseWriter, r *http.Request) {
 }
 
 func (c *TodoController) Show(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+	itemIdRaw := vars["id"]
 
+	itemId, err := strconv.Atoi(itemIdRaw)
+
+	if err != nil {
+		response.ErrorJson(w, "Invalid id parameter", "invalid_id", http.StatusBadRequest)
+		return
+	}
+
+	todo, err := query.Table("todos").Where("id", "=", itemId).First()
+
+	if err != nil {
+		response.ErrorJson(w, "Error fetching todo", "error_fetching_todo", http.StatusInternalServerError)
+		return
+	}
+
+	data := map[string]interface{}{
+		"todo": todo,
+	}
+
+	response.Json(w, "success", data, http.StatusOK)
 }
 
 func (c *TodoController) Create(w http.ResponseWriter, r *http.Request) {
