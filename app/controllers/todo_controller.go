@@ -112,7 +112,6 @@ func (c *TodoController) Create(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Validate request
 	ok, validationErrors := validate.ValidateRequest(&req)
 
 	if !ok {
@@ -152,6 +151,7 @@ func (c *TodoController) Create(w http.ResponseWriter, r *http.Request) {
 	response.Json(w, "Todo created successfully", data, http.StatusCreated)
 }
 
+// Update a todo for the authenticated user
 func (c *TodoController) Update(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	itemRawId := vars["id"]
@@ -219,6 +219,7 @@ func (c *TodoController) Update(w http.ResponseWriter, r *http.Request) {
 	response.Json(w, "Todo updated successfully", data, http.StatusOK)
 }
 
+// Delete a specific todo of authenticated the user
 func (c *TodoController) Delete(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	itemIdRaw := vars["id"]
