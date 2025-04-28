@@ -69,6 +69,7 @@ func (c *TodoController) Index(w http.ResponseWriter, r *http.Request) {
 	response.Json(w, "success", data, http.StatusOK)
 }
 
+// Get a specific todo of authenticated the user
 func (c *TodoController) Show(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	itemIdRaw := vars["id"]
@@ -94,6 +95,7 @@ func (c *TodoController) Show(w http.ResponseWriter, r *http.Request) {
 	response.Json(w, "success", data, http.StatusOK)
 }
 
+// Create a new todo for the authenticated the user
 func (c *TodoController) Create(w http.ResponseWriter, r *http.Request) {
 	var req requests.CreateTodoRequest
 
@@ -151,7 +153,70 @@ func (c *TodoController) Create(w http.ResponseWriter, r *http.Request) {
 }
 
 func (c *TodoController) Update(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+	itemRawId := vars["id"]
 
+	itemId, err := strconv.Atoi(itemRawId)
+
+	if err != nil {
+		response.ErrorJson(w, "Invalid id", "invalid_id", http.StatusBadRequest)
+		return
+	}
+
+	userId, ok := getUserIdFromContext(r)
+
+	if !ok {
+		response.ErrorJson(w, "Unauthorized Action", "unauthenticated", http.StatusUnauthorized)
+		return
+	}
+
+	req := requests.UpdateTodoRequest{}
+
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		response.ErrorJson(w, "Invalid request", "invalid_request", http.StatusBadRequest)
+		return
+	}
+
+	ok, validationErrors := validate.ValidateRequest(&req)
+
+	if !ok {
+		response.ValidationErrorJson(w, validationErrors)
+		return
+	}
+
+	sqlResult, err := query.Table("todos").Where("id", "=", itemId).Where("user_id", "=", userId).Update(map[string]any{
+		"title":       req.Title,
+		"description": req.Description,
+		"updated_at":  time.Now(),
+	})
+
+	if err != nil {
+		response.ErrorJson(w, "Error updating todo", "error_updating_todo", http.StatusInternalServerError)
+		return
+	}
+
+	rowsAffected, err := sqlResult.RowsAffected()
+
+	if err != nil {
+		response.ServerErrorJson(w)
+		return
+	}
+
+	if rowsAffected == 0 {
+		response.ErrorJson(w, "Todo not found", "todo_not_found", http.StatusNotFound)
+		return
+	}
+
+	data := map[string]any{
+		"todo": map[string]any{
+			"id":          itemId,
+			"title":       req.Title,
+			"description": req.Description,
+			"updated_at":  time.Now(),
+		},
+	}
+
+	response.Json(w, "Todo updated successfully", data, http.StatusOK)
 }
 
 func (c *TodoController) Delete(w http.ResponseWriter, r *http.Request) {
