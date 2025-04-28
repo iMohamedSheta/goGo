@@ -10,6 +10,7 @@ import (
 
 var authMiddleware = []mux.MiddlewareFunc{
 	middlewares.AuthMiddleware(),
+	middlewares.JSONContentTypeMiddleware(),
 }
 
 func RegisterApiRoutes(r *router.Router) {
@@ -26,7 +27,7 @@ func registerAuthRoutes(router *router.Router) {
 	authController := controllers.AuthController{}
 
 	router.Post("/register", authController.Register).Name("Register")
-	router.Post("/login", authController.Login).Name("Register")
+	router.Post("/login", authController.Login).Name("Login")
 	router.Post("/refresh/access-token", authController.RefreshAccessToken).Name("RefreshAccessToken")
 }
 

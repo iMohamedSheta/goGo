@@ -214,7 +214,7 @@ func (qb *QueryBuilder) InsertSql(data []map[string]interface{}) (string, []any,
 	return query, values, nil
 }
 
-func (qb *QueryBuilder) Insert(data []map[string]interface{}) (sql.Result, error) {
+func (qb *QueryBuilder) Insert(data []map[string]any) (sql.Result, error) {
 	db := database.DB()
 	query, values, err := qb.InsertSql(data)
 	if err != nil {

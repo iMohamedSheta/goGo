@@ -1,9 +1,9 @@
 package support
 
 func IsDev() bool {
-	return Config("app.environment") == "dev"
+	return Config("app.env") == "dev"
 }
 
 func IsProd() bool {
-	return Config("app.environment") == "prod"
+	return Config("app.env") == "prod"
 }

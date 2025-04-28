@@ -3,6 +3,7 @@ package routes
 import (
 	"imohamedsheta/gocrud/pkg/helpers"
 	"imohamedsheta/gocrud/pkg/router"
+	"imohamedsheta/gocrud/pkg/support"
 )
 
 // func RegisterRoutes() *mux.Router {
@@ -37,7 +38,8 @@ func RegisterRoutes() *router.Router {
 
 func mainRoutes(r *router.Router) {
 
-	r.Get("/routes", helpers.ListAllRoutes(router.Instance())).Name("listAllRoutes")
 	// Register the "list all routes" endpoint
-	// router.HandleFunc("/routes", helpers.ListAllRoutes(router)).Methods("GET")
+	if support.IsDev() {
+		r.Get("/routes", helpers.ListAllRoutes(router.Instance())).Name("listAllRoutes")
+	}
 }
