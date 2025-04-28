@@ -55,5 +55,20 @@ func ErrorJson(w http.ResponseWriter, message string, errorCode string, code int
 }
 
 func ValidationErrorJson(w http.ResponseWriter, validationErrors map[string]string) {
-	Json(w, "Validation Error", validationErrors, http.StatusUnprocessableEntity)
+	resp := &Response{
+		ErrorCode: "validation_error",
+		Message:   "Validation Error",
+		Data:      validationErrors,
+	}
+
+	w.WriteHeader(http.StatusUnprocessableEntity)
+	w.Header().Set("Content-Type", "application/json")
+
+	if err := json.NewEncoder(w).Encode(resp); err != nil {
+		logger.Log().Error("Failed to write response:  " + err.Error())
+
+		// If encoding the original response failed, send a fallback JSON error
+		ServerErrorJson(w)
+		return
+	}
 }

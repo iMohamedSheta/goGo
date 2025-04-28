@@ -247,7 +247,7 @@ func (qb *QueryBuilder) UpdateSql(data map[string]any) (string, []any, error) {
 
 func (qb *QueryBuilder) Update(data map[string]any) (sql.Result, error) {
 	db := database.DB()
-	query, values, err := qb.UpdateSql(data)
+	query, _, err := qb.UpdateSql(data)
 
 	if err != nil {
 		return nil, err
@@ -255,9 +255,9 @@ func (qb *QueryBuilder) Update(data map[string]any) (sql.Result, error) {
 
 	var result sql.Result
 	if qb.tx != nil {
-		result, err = qb.tx.Exec(query, values...) // Execute within the transaction
+		result, err = qb.tx.Exec(query, qb.values...) // Execute within the transaction
 	} else {
-		result, err = db.Exec(query, values...) // Normal execution
+		result, err = db.Exec(query, qb.values...) // Normal execution
 	}
 
 	if err != nil {
@@ -413,4 +413,41 @@ func (qb *QueryBuilder) UpdateBuild(data map[string]any) string {
 	}
 
 	return sb.String()
+}
+
+func (qb *QueryBuilder) DeleteBuild() string {
+	var sb strings.Builder
+	sb.WriteString(fmt.Sprintf("DELETE FROM %s", qb.tableName))
+
+	if len(qb.where) > 0 {
+		sb.WriteString(" WHERE " + strings.Join(qb.where, " AND "))
+	}
+	if len(qb.orderBy) > 0 {
+		sb.WriteString(" ORDER BY " + strings.Join(qb.orderBy, ", "))
+	}
+	if qb.limit != 0 {
+		sb.WriteString(fmt.Sprintf(" LIMIT %d", qb.limit))
+	}
+
+	return sb.String()
+}
+
+func (qb *QueryBuilder) Delete() (sql.Result, error) {
+	db := database.DB()
+	query := qb.DeleteBuild()
+
+	var result sql.Result
+	var err error
+
+	if qb.tx != nil {
+		result, err = qb.tx.Exec(query, qb.values...) // Execute within the transaction
+	} else {
+		result, err = db.Exec(query, qb.values...) // Normal execution
+	}
+
+	if err != nil {
+		return nil, err
+	}
+
+	return result, nil
 }

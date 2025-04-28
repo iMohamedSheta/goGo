@@ -2,11 +2,8 @@ package controllers
 
 import (
 	"encoding/json"
-	"fmt"
 	"imohamedsheta/gocrud/app/enums"
-	"imohamedsheta/gocrud/app/models"
 	"imohamedsheta/gocrud/app/requests"
-	"imohamedsheta/gocrud/pkg/config"
 	"imohamedsheta/gocrud/pkg/logger"
 	"imohamedsheta/gocrud/pkg/response"
 	"imohamedsheta/gocrud/pkg/validate"
@@ -18,128 +15,253 @@ import (
 	"github.com/gorilla/mux"
 )
 
-type OldTodoController struct{}
+type TodoController struct{}
 
-func (c *OldTodoController) UsersIndex(w http.ResponseWriter, r *http.Request) {
-	users, err := query.UsersTable().Get()
-
-	if err != nil {
-		logger.Log().Error(err.Error())
-		errorResponse(w, "Error getting users")
-		return
-	}
-
-	message := "Welcome to the " + config.App.Get("app.name").(string) + " API"
-	response := map[string]any{
-		"users":   users,
-		"message": message,
-	}
-
-	responseJson, err := json.Marshal(response)
-
-	if err != nil {
-		logger.Log().Error(err.Error())
-		errorResponse(w, "Error marshalling users")
-		return
-	}
-
-	w.Write(responseJson)
-}
-
-func (c *OldTodoController) Index(w http.ResponseWriter, r *http.Request) {
-	userIDRaw := r.Context().Value(enums.ContextKeyUserId)
-	userID, ok := userIDRaw.(float64)
+// return paginated list of todos of authenticated the user
+func (c *TodoController) Index(w http.ResponseWriter, r *http.Request) {
+	userId, ok := getUserIdFromContext(r)
 
 	if !ok {
-		errorResponse(w, "Invalid user id or missing in context")
+		response.ErrorJson(w, "Unauthorized Action", "unauthenticated", http.StatusUnauthorized)
 		return
 	}
 
-	todo := &models.Todo{
-		Title:       "todo number 2",
-		UserId:      int64(userID),
-		Description: "this is the todo number 2",
-		Status:      uint8(enums.IN_PROGRESS),
-		CreatedAt:   time.Now(),
-		UpdatedAt:   time.Now(),
+	perPageRaw := r.URL.Query().Get("per_page")
+	pageRaw := r.URL.Query().Get("page")
+
+	var perPage int
+	var page int
+
+	if perPageRaw == "" {
+		perPage = 100
+	} else {
+		var err error
+		perPage, err = strconv.Atoi(perPageRaw)
+		if err != nil {
+			response.ErrorJson(w, "Invalid per_page parameter", "invalid_per_page", http.StatusBadRequest)
+			return
+		}
 	}
 
-	err := query.TodosTable().Insert(todo)
+	if pageRaw == "" {
+		page = 1
+	} else {
+		var err error
+		page, err = strconv.Atoi(pageRaw)
+		if err != nil {
+			response.ErrorJson(w, "Invalid page parameter", "invalid_page", http.StatusBadRequest)
+			return
+		}
+	}
+
+	userTodos, meta, err := query.Table("todos").Where("user_id", "=", int64(userId)).Paginate(page, perPage, true)
+
 	if err != nil {
-		logger.Log().Error(err.Error())
-		errorResponse(w, err.Error())
+		response.ErrorJson(w, "Error fetching todos", "error_fetching_todos", http.StatusInternalServerError)
 		return
 	}
 
-	response.Json(w, "Todo created successfully", todo, http.StatusCreated)
+	data := map[string]interface{}{
+		"todos": userTodos,
+		"meta":  meta,
+	}
+
+	response.Json(w, "success", data, http.StatusOK)
 }
 
-func (c *OldTodoController) Show(w http.ResponseWriter, r *http.Request) {
-	idStr := mux.Vars(r)["id"]
+// Get a specific todo of authenticated the user
+func (c *TodoController) Show(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+	itemIdRaw := vars["id"]
 
-	id, err := strconv.Atoi(idStr)
+	itemId, err := strconv.Atoi(itemIdRaw)
 
 	if err != nil {
-		w.WriteHeader(http.StatusNotFound)
-		w.Write([]byte("Invalid ID"))
+		response.ErrorJson(w, "Invalid id parameter", "invalid_id", http.StatusBadRequest)
 		return
 	}
 
-	w.Write([]byte(fmt.Sprintf("Show todo with ID: %d", id)))
+	todo, err := query.Table("todos").Where("id", "=", itemId).First()
+
+	if err != nil {
+		response.ErrorJson(w, "Error fetching todo", "error_fetching_todo", http.StatusInternalServerError)
+		return
+	}
+
+	data := map[string]interface{}{
+		"todo": todo,
+	}
+
+	response.Json(w, "success", data, http.StatusOK)
 }
 
-func (c *OldTodoController) Create(w http.ResponseWriter, r *http.Request) {
+// Create a new todo for the authenticated the user
+func (c *TodoController) Create(w http.ResponseWriter, r *http.Request) {
 	var req requests.CreateTodoRequest
 
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 		logger.Log().Error(err.Error())
-		http.Error(w, "Invalid JSON format", http.StatusBadRequest)
+		response.ErrorJson(w, "Invalid request", "invalid_request", http.StatusBadRequest)
+		return
+	}
+
+	userId, ok := getUserIdFromContext(r)
+
+	if !ok {
+		response.ErrorJson(w, "Unauthorized Action", "unauthenticated", http.StatusUnauthorized)
 		return
 	}
 
 	// Validate request
 	ok, validationErrors := validate.ValidateRequest(&req)
+
 	if !ok {
-		w.WriteHeader(http.StatusBadRequest)
-		json.NewEncoder(w).Encode(map[string]interface{}{
-			"message": "Validation failed",
-			"errors":  validationErrors,
-		})
+		response.ValidationErrorJson(w, validationErrors)
 		return
 	}
 
-	// Build todo model
-	todo := &models.Todo{
-		Title:       req.Title,
-		Description: req.Description,
-		Status:      uint8(enums.CANCELLED),
-		CreatedAt:   time.Now(),
-		UpdatedAt:   time.Now(),
+	createdTodo := []map[string]any{
+		{
+			"title":       req.Title,
+			"description": req.Description,
+			"user_id":     userId,
+			"status":      uint8(enums.CANCELLED),
+			"created_at":  time.Now(),
+			"updated_at":  time.Now(),
+		},
 	}
 
-	// Insert into DB
-	if err := query.TodosTable().Insert(todo); err != nil {
+	sqlResult, err := query.Table("todos").Insert(createdTodo)
+
+	if err != nil {
 		logger.Log().Error(err.Error())
-		errorResponse(w, "Failed to create todo")
+		response.ErrorJson(w, "Failed to create todo", "failed_to_create_todo", http.StatusInternalServerError)
 		return
 	}
 
-	// Return success response
-	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(map[string]interface{}{
-		"message": "Todo created successfully",
+	createdTodoId, err := sqlResult.LastInsertId()
+
+	if err == nil {
+		createdTodo[0]["id"] = createdTodoId
+	}
+
+	data := map[string]any{
+		"todo": createdTodo[0],
+	}
+
+	response.Json(w, "Todo created successfully", data, http.StatusCreated)
+}
+
+func (c *TodoController) Update(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+	itemRawId := vars["id"]
+
+	itemId, err := strconv.Atoi(itemRawId)
+
+	if err != nil {
+		response.ErrorJson(w, "Invalid id", "invalid_id", http.StatusBadRequest)
+		return
+	}
+
+	userId, ok := getUserIdFromContext(r)
+
+	if !ok {
+		response.ErrorJson(w, "Unauthorized Action", "unauthenticated", http.StatusUnauthorized)
+		return
+	}
+
+	req := requests.UpdateTodoRequest{}
+
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		response.ErrorJson(w, "Invalid request", "invalid_request", http.StatusBadRequest)
+		return
+	}
+
+	ok, validationErrors := validate.ValidateRequest(&req)
+
+	if !ok {
+		response.ValidationErrorJson(w, validationErrors)
+		return
+	}
+
+	sqlResult, err := query.Table("todos").Where("id", "=", itemId).Where("user_id", "=", userId).Update(map[string]any{
+		"title":       req.Title,
+		"description": req.Description,
+		"updated_at":  time.Now(),
 	})
+
+	if err != nil {
+		response.ErrorJson(w, "Error updating todo", "error_updating_todo", http.StatusInternalServerError)
+		return
+	}
+
+	rowsAffected, err := sqlResult.RowsAffected()
+
+	if err != nil {
+		response.ServerErrorJson(w)
+		return
+	}
+
+	if rowsAffected == 0 {
+		response.ErrorJson(w, "Todo not found", "todo_not_found", http.StatusNotFound)
+		return
+	}
+
+	data := map[string]any{
+		"todo": map[string]any{
+			"id":          itemId,
+			"title":       req.Title,
+			"description": req.Description,
+			"updated_at":  time.Now(),
+		},
+	}
+
+	response.Json(w, "Todo updated successfully", data, http.StatusOK)
 }
 
-func (c *OldTodoController) Update(w http.ResponseWriter, r *http.Request) {
+func (c *TodoController) Delete(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+	itemIdRaw := vars["id"]
 
+	itemId, err := strconv.Atoi(itemIdRaw)
+
+	if err != nil {
+		response.ErrorJson(w, "Invalid item id", "invalid_item_id", http.StatusBadRequest)
+		return
+	}
+
+	userId, ok := getUserIdFromContext(r)
+
+	if !ok {
+		response.ErrorJson(w, "Unauthorized Action", "unauthenticated", http.StatusUnauthorized)
+		return
+	}
+
+	sqlResult, err := query.Table("todos").Where("user_id", "=", userId).Where("id", "=", itemId).Delete()
+
+	if err != nil {
+		response.ErrorJson(w, "Error deleting todo", "error_deleting_todo", http.StatusInternalServerError)
+		return
+	}
+
+	rowsAffected, err := sqlResult.RowsAffected()
+
+	if err != nil {
+		response.ErrorJson(w, "Error deleting todo", "error_deleting_todo", http.StatusInternalServerError)
+		return
+	}
+
+	if rowsAffected == 0 {
+		response.ErrorJson(w, "Todo not found", "todo_not_found", http.StatusNotFound)
+		return
+	}
+
+	response.Json(w, "Todo deleted successfully", nil, http.StatusOK)
 }
 
-func (c *OldTodoController) Delete(w http.ResponseWriter, r *http.Request) {
+func getUserIdFromContext(r *http.Request) (float64, bool) {
+	userIdRaw := r.Context().Value(enums.ContextKeyUserId)
+	userId, ok := userIdRaw.(float64)
 
-}
-
-func errorResponse(w http.ResponseWriter, message string) {
-	w.WriteHeader(http.StatusInternalServerError)
-	w.Write([]byte(message))
+	return userId, ok
 }
