@@ -5,21 +5,24 @@ import (
 	"fmt"
 	"imohamedsheta/gocrud/database"
 	"imohamedsheta/gocrud/pkg/logger"
+	"math"
 	"strings"
+
+	"github.com/jmoiron/sqlx"
 )
 
 type QueryBuilder struct {
-	tableName      string
-	joins          []Join
-	fields         []string
-	where          []string
-	orderBy        []string
-	groupBy        []string
-	having         []string
-	limit          int
-	offset         int
-	values         []any
-	updated_fields []string
+	tableName string
+	joins     []Join
+	fields    []string
+	where     []string
+	orderBy   []string
+	groupBy   []string
+	having    []string
+	limit     int
+	offset    int
+	values    []any
+	tx        *sqlx.Tx // Transaction field
 }
 
 type Join struct {
@@ -53,6 +56,17 @@ func (qb *QueryBuilder) Select(fields ...string) *QueryBuilder {
 func (qb *QueryBuilder) Where(field, operator string, value interface{}) *QueryBuilder {
 	qb.where = append(qb.where, fmt.Sprintf("%s %s ?", field, operator))
 	qb.values = append(qb.values, value)
+	return qb
+}
+
+func (qb *QueryBuilder) WhereIn(field string, values []interface{}) *QueryBuilder {
+	placeholders := make([]string, len(values))
+	for i := range values {
+		placeholders[i] = "?"
+	}
+
+	qb.where = append(qb.where, fmt.Sprintf("%s IN (%s)", field, strings.Join(placeholders, ", ")))
+	qb.values = append(qb.values, values...)
 	return qb
 }
 
@@ -112,14 +126,42 @@ func (qb *QueryBuilder) ToSql() string {
 	return qb.Build()
 }
 
-func (qb *QueryBuilder) Paginate(page, perPage int) ([]map[string]interface{}, error) {
+func (qb *QueryBuilder) Paginate(page, perPage int, withCount bool) ([]map[string]any, map[string]any, error) {
+
 	if page < 1 {
 		page = 1
 	}
 	qb.limit = perPage
 	qb.offset = (page - 1) * perPage
 
-	return qb.Execute()
+	// First, execute the paginated query to get the results
+	results, err := qb.Execute()
+	if err != nil {
+		return nil, nil, err
+	}
+
+	meta := map[string]any{
+		"per_page":     perPage,
+		"current_page": page,
+	}
+
+	if withCount {
+		// Use the Count() method to get the total count of records
+		countResults, err := qb.Count()
+		if err != nil {
+			return nil, nil, err
+		}
+		if len(countResults) > 0 {
+			count := countResults[0]["count"]
+
+			meta["total_count"] = count
+			meta["last_page"] = int(math.Ceil(float64(count.(int64)) / float64(perPage)))
+			return results, meta, nil
+		}
+	}
+
+	// If no count is needed, just return the results
+	return results, meta, nil
 }
 
 func (qb *QueryBuilder) First() (map[string]interface{}, error) {
@@ -179,7 +221,13 @@ func (qb *QueryBuilder) Insert(data []map[string]interface{}) (sql.Result, error
 		return nil, err
 	}
 
-	result, err := db.Exec(query, values...)
+	var result sql.Result
+	if qb.tx != nil {
+		result, err = qb.tx.Exec(query, values...) // Execute within the transaction
+	} else {
+		result, err = db.Exec(query, values...) // Normal execution
+	}
+
 	if err != nil {
 		return nil, err
 	}
@@ -205,7 +253,12 @@ func (qb *QueryBuilder) Update(data map[string]any) (sql.Result, error) {
 		return nil, err
 	}
 
-	result, err := db.Exec(query, values...)
+	var result sql.Result
+	if qb.tx != nil {
+		result, err = qb.tx.Exec(query, values...) // Execute within the transaction
+	} else {
+		result, err = db.Exec(query, values...) // Normal execution
+	}
 
 	if err != nil {
 		return nil, err
@@ -215,54 +268,49 @@ func (qb *QueryBuilder) Update(data map[string]any) (sql.Result, error) {
 }
 
 func (qb *QueryBuilder) Execute() ([]map[string]any, error) {
-	db := database.DB() // Get the database connection
+	db := database.DB()
+	var tx *sqlx.Tx
 
-	query := qb.Build() // Build the SQL query string with bound values
+	if qb.tx != nil {
+		tx = qb.tx
+	}
+
+	query := qb.Build()
 
 	// Execute the query with parameters
-	rows, err := db.Query(query, qb.values...)
+	rows, err := executeQuery(tx, db, query, qb.values...)
 	if err != nil {
 		logger.Log().Error(err.Error()) // Log the error if query fails
 		return nil, err                 // Return the error to the caller
 	}
 	defer rows.Close() // Ensure that the rows are closed once the function exits
 
-	// all result rows
 	var results []map[string]any
-
-	// Get the column names from the result set (used for mapping results)
 	columns, err := rows.Columns()
 	if err != nil {
 		logger.Log().Error(err.Error())
 		return nil, err
 	}
 
-	// Prepare for scanning values into the result
-	values := make([]any, len(columns))    // Actual values will be stored here
-	valuePtrs := make([]any, len(columns)) // Need for rows.Scan to manipulate the values
+	values := make([]any, len(columns))
+	valuePtrs := make([]any, len(columns))
 	for i := range values {
-		valuePtrs[i] = &values[i] // Point each valuePtr to returned value
+		valuePtrs[i] = &values[i]
 	}
 
-	// Iterate through all rows
 	for rows.Next() {
-		// Scan the row values need pointers to write the values to
 		if err := rows.Scan(valuePtrs...); err != nil {
 			logger.Log().Error(err.Error())
 			return nil, err
 		}
 
-		// the result is a map of column names to their values
 		result := make(map[string]any)
-
 		for i, col := range columns {
-			currentValue := values[i] // Get the value for the current column
-
-			// If the value is a byte slice (e.g., text or varchar), convert it to string
+			currentValue := values[i]
 			if currentInBytes, ok := currentValue.([]byte); ok {
 				result[col] = string(currentInBytes)
 			} else {
-				result[col] = currentValue // If not []byte, store the value as it is
+				result[col] = currentValue
 			}
 		}
 
@@ -272,8 +320,42 @@ func (qb *QueryBuilder) Execute() ([]map[string]any, error) {
 	return results, nil
 }
 
+func executeQuery(tx *sqlx.Tx, db *sqlx.DB, query string, args ...any) (*sql.Rows, error) {
+	if tx != nil {
+		return tx.Query(query, args...)
+	}
+	return db.Query(query, args...)
+}
+
 func (qb *QueryBuilder) Values() []any {
 	return qb.values
+}
+
+// StartTransaction starts a new transaction
+func (qb *QueryBuilder) BeginTransaction() error {
+	db := database.DB()
+	tx, err := db.Beginx() // Start a transaction
+	if err != nil {
+		return err
+	}
+	qb.tx = tx
+	return nil
+}
+
+// CommitTransaction commits the current transaction
+func (qb *QueryBuilder) Commit() error {
+	if qb.tx == nil {
+		return fmt.Errorf("no transaction to commit")
+	}
+	return qb.tx.Commit()
+}
+
+// RollbackTransaction rolls back the current transaction
+func (qb *QueryBuilder) Rollback() error {
+	if qb.tx == nil {
+		return fmt.Errorf("no transaction to rollback")
+	}
+	return qb.tx.Rollback()
 }
 
 func (qb *QueryBuilder) Build() string {

@@ -2,6 +2,7 @@ package auth
 
 import (
 	"errors"
+	"fmt"
 	"imohamedsheta/gocrud/pkg/config"
 	"imohamedsheta/gocrud/pkg/jwt"
 	"imohamedsheta/gocrud/pkg/logger"
@@ -25,6 +26,9 @@ func GenerateRefreshToken(userID int64, claims map[string]any) (string, error) {
 	}
 
 	for k, v := range claims {
+		if k == "user_id" || k == "type" || k == "iat" || k == "exp" { // ignore these fields if added to claims they will be added to payload
+			continue
+		}
 		payload[k] = v
 	}
 
@@ -41,6 +45,9 @@ func GenerateAccessToken(userID int64, claims map[string]any) (string, error) {
 	}
 
 	for k, v := range claims {
+		if k == "user_id" || k == "type" || k == "iat" || k == "exp" {
+			continue
+		}
 		payload[k] = v
 	}
 
@@ -53,7 +60,8 @@ func ValidateAuthToken(jwtToken string, tokenType AuthTokenType) (*jwt.JWT, erro
 
 	valid, err := jwt.Verify(jwtToken, secret)
 	if err != nil || !valid {
-		return nil, errors.New("invalid refresh token")
+
+		return nil, fmt.Errorf("invalid %s token", string(tokenType))
 	}
 
 	jwtTokenDecoded, err := jwt.DecodeJWT(jwtToken)
@@ -79,7 +87,7 @@ func ValidateAuthToken(jwtToken string, tokenType AuthTokenType) (*jwt.JWT, erro
 
 	expirationTime := time.Unix(int64(exp.(float64)), 0)
 	if time.Now().After(expirationTime) {
-		return nil, errors.New("refresh token has expired")
+		return nil, fmt.Errorf("expired %s token", string(tokenType))
 	}
 
 	return jwtTokenDecoded, nil

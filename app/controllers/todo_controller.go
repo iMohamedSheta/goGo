@@ -18,9 +18,9 @@ import (
 	"github.com/gorilla/mux"
 )
 
-type TodoController struct{}
+type OldTodoController struct{}
 
-func (c *TodoController) UsersIndex(w http.ResponseWriter, r *http.Request) {
+func (c *OldTodoController) UsersIndex(w http.ResponseWriter, r *http.Request) {
 	users, err := query.UsersTable().Get()
 
 	if err != nil {
@@ -46,7 +46,7 @@ func (c *TodoController) UsersIndex(w http.ResponseWriter, r *http.Request) {
 	w.Write(responseJson)
 }
 
-func (c *TodoController) Index(w http.ResponseWriter, r *http.Request) {
+func (c *OldTodoController) Index(w http.ResponseWriter, r *http.Request) {
 	userIDRaw := r.Context().Value(enums.ContextKeyUserId)
 	userID, ok := userIDRaw.(float64)
 
@@ -74,7 +74,7 @@ func (c *TodoController) Index(w http.ResponseWriter, r *http.Request) {
 	response.Json(w, "Todo created successfully", todo, http.StatusCreated)
 }
 
-func (c *TodoController) Show(w http.ResponseWriter, r *http.Request) {
+func (c *OldTodoController) Show(w http.ResponseWriter, r *http.Request) {
 	idStr := mux.Vars(r)["id"]
 
 	id, err := strconv.Atoi(idStr)
@@ -88,7 +88,7 @@ func (c *TodoController) Show(w http.ResponseWriter, r *http.Request) {
 	w.Write([]byte(fmt.Sprintf("Show todo with ID: %d", id)))
 }
 
-func (c *TodoController) Create(w http.ResponseWriter, r *http.Request) {
+func (c *OldTodoController) Create(w http.ResponseWriter, r *http.Request) {
 	var req requests.CreateTodoRequest
 
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
@@ -131,11 +131,11 @@ func (c *TodoController) Create(w http.ResponseWriter, r *http.Request) {
 	})
 }
 
-func (c *TodoController) Update(w http.ResponseWriter, r *http.Request) {
+func (c *OldTodoController) Update(w http.ResponseWriter, r *http.Request) {
 
 }
 
-func (c *TodoController) Delete(w http.ResponseWriter, r *http.Request) {
+func (c *OldTodoController) Delete(w http.ResponseWriter, r *http.Request) {
 
 }
 

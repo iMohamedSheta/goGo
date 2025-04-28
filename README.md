@@ -12,3 +12,4 @@
 8. [x] Validations
 9. [x] Custom Validation Rules
 10. [x] Requests that can be validated
+11. [x] Small query builder

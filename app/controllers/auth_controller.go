@@ -186,14 +186,14 @@ func (c *AuthController) RefreshAccessToken(w http.ResponseWriter, r *http.Reque
 	// Validate and decode the refresh token
 	token, err := auth.ValidateAuthToken(refreshToken, auth.RefreshToken)
 	if err != nil {
-		response.ErrorJson(w, err.Error(), "invalid_refresh_token 1", http.StatusUnauthorized)
+		response.ErrorJson(w, err.Error(), "invalid_refresh_token", http.StatusUnauthorized)
 		return
 	}
 
 	userIdRaw, err := token.Get("user_id")
 
 	if err != nil {
-		response.ErrorJson(w, err.Error(), "invalid_refresh_token 2 ", http.StatusUnauthorized)
+		response.ErrorJson(w, err.Error(), "invalid_refresh_token", http.StatusUnauthorized)
 		return
 	}
 
