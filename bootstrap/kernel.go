@@ -19,6 +19,26 @@ import (
 	"github.com/joho/godotenv"
 )
 
+/*
+	Package bootstrap kernel initializes and runs the core application lifecycle.
+
+	This file is the main entry point for bootstrapping the application. It:
+	- Loads essential configurations (environment variables, app settings, DB, logger, validation rules).
+	- Decides whether to start the HTTP server or run a CLI command based on input arguments.
+	- Starts the HTTP server with graceful shutdown capabilities on system signals (e.g., SIGTERM).
+	- Registers and executes CLI commands when applicable.
+
+	Modules involved:
+	- config: loads and provides access to application configuration.
+	- logger: sets up the global logging system.
+	- database: initializes the database connection.
+	- validate: registers custom validation rules.
+	- routes: provides the HTTP router.
+	- cmd: manages CLI commands.
+
+	This file should be invoked from `main.go` via `bootstrap.Load()` and `bootstrap.Run()`.
+*/
+
 // Load application (env, config, DB, logger, validation)
 func Load() {
 	loadEnvConfig()

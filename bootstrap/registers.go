@@ -9,10 +9,10 @@ import (
 	"github.com/spf13/cobra"
 )
 
-/**
+/*
 	This file is used to register all the custom stuff in the application
 	like the commands, configuration files, validations rules, ...etc
-**/
+*/
 
 // Load the config files
 func loadConfig() {
