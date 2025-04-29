@@ -5,6 +5,6 @@ import (
 	"imohamedsheta/gocrud/pkg/enums"
 )
 
-func LogError(err any) {
+func LogConsoleError(err any) {
 	fmt.Printf(enums.Red.Value()+"Error: %s\n"+enums.Reset.Value()+"\n", err)
 }

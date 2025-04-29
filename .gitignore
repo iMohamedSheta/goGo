@@ -1,4 +1,5 @@
 .env
 app\controllers\radius_controller.go
 routes/radius_api.go
-\zgitignore
+\ignored
+tmp

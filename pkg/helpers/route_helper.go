@@ -26,7 +26,7 @@ func ListAllRoutes(router *router.Router) http.HandlerFunc {
 						"path":    path,
 						"methods": methods[0],
 					})
-				} else {
+				} else if len(methods) > 1 {
 					routes = append(routes, map[string]interface{}{
 						"path":    path,
 						"methods": methods,
