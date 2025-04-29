@@ -1,6 +1,7 @@
 package bootstrap
 
 import (
+	"context"
 	"imohamedsheta/gocrud/database"
 	"imohamedsheta/gocrud/pkg/cmd"
 	"imohamedsheta/gocrud/pkg/config"
@@ -11,17 +12,14 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"os/signal"
+	"syscall"
+	"time"
 
 	"github.com/joho/godotenv"
 )
 
-/*
-*
-	This file is used to bootstrap the application.
-*
-*/
-
-// Load Application
+// Load application (env, config, DB, logger, validation)
 func Load() {
 	loadEnvConfig()
 	loadConfig()
@@ -30,72 +28,85 @@ func Load() {
 	loadValidation()
 }
 
-// Run the Application (CLI or HTTP server)
+// Run the application (serve HTTP or execute CLI command)
 func Run() {
-	// If the command is "serve" then we'll start the HTTP server
 	if len(os.Args) > 1 && os.Args[1] == "serve" {
 		startHttpServer()
+	} else {
+		executeCommand()
 	}
-
-	// Otherwise, we'll run the CLI
-	executeCommand()
 }
 
-// Start the HTTP server
+// Start the HTTP server with graceful shutdown
 func startHttpServer() {
-
+	shutdown_timeout := config.App.Get("app.shutdown_timeout").(time.Duration)
 	url := config.App.Get("app.url").(string)
 	port := config.App.Get("app.port").(string)
 
-	log.Println(enums.Green.Value() + "Starting HTTP server on http://" + url + ":" + port + " ..." + enums.Reset.Value())
-
-	if err := http.ListenAndServe(url+":"+port, routes.RegisterRoutes()); err != nil {
-		log.Fatal(enums.Red.Value() + err.Error() + enums.Reset.Value())
+	srv := &http.Server{
+		Addr:    url + ":" + port,
+		Handler: routes.RegisterRoutes(),
 	}
+
+	// Start the server in a goroutine
+	go func() {
+		log.Println(enums.Green.Value() + "Starting HTTP server on http://" + url + ":" + port + " ..." + enums.Reset.Value())
+		if err := srv.ListenAndServe(); err != nil && err != http.ErrServerClosed {
+			log.Fatal(enums.Red.Value() + "Server error: " + err.Error() + enums.Reset.Value())
+		}
+	}()
+
+	// Listen for OS signals for graceful shutdown
+	quit := make(chan os.Signal, 1)
+	signal.Notify(quit, os.Interrupt, syscall.SIGTERM)
+	<-quit
+
+	log.Println(enums.Yellow.Value() + "Shutting down server..." + enums.Reset.Value())
+
+	// timeout for shutdown
+	ctx, cancel := context.WithTimeout(context.Background(), shutdown_timeout)
+	defer cancel()
+
+	if err := srv.Shutdown(ctx); err != nil {
+		log.Fatal(enums.Red.Value() + "Forced to shutdown: " + err.Error() + enums.Reset.Value())
+	}
+
+	log.Println(enums.Green.Value() + "Server exited properly" + enums.Reset.Value())
 }
 
+// Execute CLI command
 func executeCommand() {
-	// Register all commands
 	registerCommands()
-
-	// Execute the command
 	cmd.Execute()
 }
 
-// connect to the database
-func loadDatabaseConnection() {
-	// Connect to the database
-	database.Connect()
-}
-
-// Load the environment variables
+// Load environment variables
 func loadEnvConfig() {
-	err := godotenv.Load()
-
-	if err != nil {
+	if err := godotenv.Load(); err != nil {
 		log.Fatal(enums.Red.Value() + "Error loading .env file" + enums.Reset.Value())
 	}
-
 	log.Println(enums.Green.Value() + "Kernel: Loaded .env file" + enums.Reset.Value())
 }
 
-// Load the validation rules
+// Connect to the database
+func loadDatabaseConnection() {
+	database.Connect()
+}
+
+// Load validation rules
 func loadValidation() {
 	validator := validate.Validator()
-
 	for tag, rule := range registeredRules {
-		err := validator.RegisterValidation(tag, rule)
-
-		if err != nil {
-			logger.Log().Error("Error registering validation rule: " + tag + ":  error: " + err.Error())
+		if err := validator.RegisterValidation(tag, rule); err != nil {
+			logger.Log().Error("Error registering validation rule: " + tag + ": " + err.Error())
 		}
 	}
 }
 
-// registerCommands registers all commands
+// Register CLI commands
 func registerCommands() {
 	rootCmd := cmd.Command()
-	for _, cmd := range registeredCommands {
-		rootCmd.AddCommand(cmd)
+	for _, c := range registeredCommands {
+		rootCmd.AddCommand(c)
 	}
 }
