@@ -1,0 +1,13 @@
+syntax = "proto3";
+
+package sheta;
+
+option go_package = "v1/sheta/proto;sheta";
+
+service SaySheta {
+  rpc SaySheta(SayShetaRequest) returns (SayShetaResponse) {};
+}
+
+message SayShetaRequest { string name = 1; }
+
+message SayShetaResponse { string message = 1; }

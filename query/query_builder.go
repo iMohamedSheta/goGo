@@ -126,7 +126,7 @@ func (qb *QueryBuilder) ToSql() string {
 	return qb.Build()
 }
 
-func (qb *QueryBuilder) Paginate(page, perPage int, withCount bool) ([]map[string]any, map[string]any, error) {
+func (qb *QueryBuilder) Paginate(perPage int, page int, withCount bool) ([]map[string]any, map[string]any, error) {
 
 	if page < 1 {
 		page = 1

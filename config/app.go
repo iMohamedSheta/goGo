@@ -10,7 +10,7 @@ func LoadAppConfig() {
 		"name":             config.Env("APP_NAME", "GoCrudRestApi"),
 		"url":              config.Env("APP_URL", "localhost"),
 		"port":             config.Env("APP_PORT", 7777),
-		"shutdown_timeout": 5 * time.Second,
+		"shutdown_timeout": 20 * time.Second,
 		"log_path":         config.Env("APP_LOG_PATH", "storage/logs/app.log"),
 		"env":              config.Env("APP_ENV", "dev"),
 		"debug":            config.Env("APP_DEBUG", true),

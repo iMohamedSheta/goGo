@@ -3,11 +3,11 @@ package controllers
 import (
 	"encoding/json"
 	"imohamedsheta/gocrud/app/enums"
+	"imohamedsheta/gocrud/app/repository"
 	"imohamedsheta/gocrud/app/requests"
 	"imohamedsheta/gocrud/pkg/logger"
 	"imohamedsheta/gocrud/pkg/response"
 	"imohamedsheta/gocrud/pkg/validate"
-	"imohamedsheta/gocrud/query"
 	"net/http"
 	"strconv"
 	"time"
@@ -15,7 +15,9 @@ import (
 	"github.com/gorilla/mux"
 )
 
-type TodoController struct{}
+type TodoController struct {
+	repository.TodoRepository
+}
 
 // return paginated list of todos of authenticated the user
 func (c *TodoController) Index(w http.ResponseWriter, r *http.Request) {
@@ -54,7 +56,7 @@ func (c *TodoController) Index(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	userTodos, meta, err := query.Table("todos").Where("user_id", "=", int64(userId)).Paginate(page, perPage, true)
+	userTodos, meta, err := c.TodoRepository.PaginatedUserTodos(int64(userId), perPage, page, true)
 
 	if err != nil {
 		response.ErrorJson(w, "Error fetching todos", "error_fetching_todos", http.StatusInternalServerError)
@@ -74,6 +76,13 @@ func (c *TodoController) Show(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	itemIdRaw := vars["id"]
 
+	userId, ok := getUserIdFromContext(r)
+
+	if !ok {
+		response.ErrorJson(w, "Unauthorized Action", "unauthenticated", http.StatusUnauthorized)
+		return
+	}
+
 	itemId, err := strconv.Atoi(itemIdRaw)
 
 	if err != nil {
@@ -81,7 +90,9 @@ func (c *TodoController) Show(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	todo, err := query.Table("todos").Where("id", "=", itemId).First()
+	todo, err := c.TodoRepository.Find(int64(userId), int64(itemId))
+
+	// todo, err := query.Table("todos").Where("id", "=", itemId).First()
 
 	if err != nil {
 		response.ErrorJson(w, "Error fetching todo", "error_fetching_todo", http.StatusInternalServerError)
@@ -119,18 +130,18 @@ func (c *TodoController) Create(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	createdTodo := []map[string]any{
+	createTodo := []map[string]any{
 		{
 			"title":       req.Title,
 			"description": req.Description,
 			"user_id":     userId,
-			"status":      uint8(enums.CANCELLED),
+			"status":      uint8(enums.IN_PROGRESS),
 			"created_at":  time.Now(),
 			"updated_at":  time.Now(),
 		},
 	}
 
-	sqlResult, err := query.Table("todos").Insert(createdTodo)
+	createdTodo, err := c.TodoRepository.Create(int64(userId), createTodo)
 
 	if err != nil {
 		logger.Log().Error(err.Error())
@@ -138,14 +149,8 @@ func (c *TodoController) Create(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	createdTodoId, err := sqlResult.LastInsertId()
-
-	if err == nil {
-		createdTodo[0]["id"] = createdTodoId
-	}
-
 	data := map[string]any{
-		"todo": createdTodo[0],
+		"todo": createdTodo,
 	}
 
 	response.Json(w, "Todo created successfully", data, http.StatusCreated)
@@ -154,9 +159,9 @@ func (c *TodoController) Create(w http.ResponseWriter, r *http.Request) {
 // Update a todo for the authenticated user
 func (c *TodoController) Update(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
-	itemRawId := vars["id"]
+	itemIdRaw := vars["id"]
 
-	itemId, err := strconv.Atoi(itemRawId)
+	itemId, err := strconv.ParseInt(itemIdRaw, 10, 64)
 
 	if err != nil {
 		response.ErrorJson(w, "Invalid id", "invalid_id", http.StatusBadRequest)
@@ -184,21 +189,15 @@ func (c *TodoController) Update(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	sqlResult, err := query.Table("todos").Where("id", "=", itemId).Where("user_id", "=", userId).Update(map[string]any{
+	updatedFields := map[string]any{
 		"title":       req.Title,
 		"description": req.Description,
-		"updated_at":  time.Now(),
-	})
+	}
+
+	rowsAffected, err := c.TodoRepository.Update(int64(userId), itemId, updatedFields)
 
 	if err != nil {
 		response.ErrorJson(w, "Error updating todo", "error_updating_todo", http.StatusInternalServerError)
-		return
-	}
-
-	rowsAffected, err := sqlResult.RowsAffected()
-
-	if err != nil {
-		response.ServerErrorJson(w)
 		return
 	}
 
@@ -224,7 +223,7 @@ func (c *TodoController) Delete(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	itemIdRaw := vars["id"]
 
-	itemId, err := strconv.Atoi(itemIdRaw)
+	itemId, err := strconv.ParseInt(itemIdRaw, 10, 64)
 
 	if err != nil {
 		response.ErrorJson(w, "Invalid item id", "invalid_item_id", http.StatusBadRequest)
@@ -238,14 +237,7 @@ func (c *TodoController) Delete(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	sqlResult, err := query.Table("todos").Where("user_id", "=", userId).Where("id", "=", itemId).Delete()
-
-	if err != nil {
-		response.ErrorJson(w, "Error deleting todo", "error_deleting_todo", http.StatusInternalServerError)
-		return
-	}
-
-	rowsAffected, err := sqlResult.RowsAffected()
+	rowsAffected, err := c.TodoRepository.Delete(int64(userId), itemId)
 
 	if err != nil {
 		response.ErrorJson(w, "Error deleting todo", "error_deleting_todo", http.StatusInternalServerError)

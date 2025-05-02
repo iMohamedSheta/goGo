@@ -2,7 +2,7 @@ syntax = "proto3";
 
 package hello;
 
-option go_package = "example.com/hello/proto;hello";
+option go_package = "v1/hello/proto;hello";
 
 service Hello {
   rpc SayHello(HelloRequest) returns (HelloResponse) {};

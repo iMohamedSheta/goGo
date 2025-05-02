@@ -71,7 +71,7 @@ func (c *AuthController) Register(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	user.Id = result["id"].(int64)
+	user.Id = result["id"].(string)
 
 	jwtPayload := map[string]any{
 		"username":  user.Username,
@@ -144,14 +144,14 @@ func (controller *AuthController) Login(w http.ResponseWriter, r *http.Request) 
 	// Prepare the payload for JWT tokens
 	jwtPayload := map[string]any{
 		"username":  result["username"].(string),
-		"id":        result["id"].(int64),
+		"id":        result["id"].(string),
 		"email":     result["email"].(string),
 		"firstName": result["first_name"].(string),
 		"lastName":  result["last_name"].(string),
 	}
 
 	// Generate access token using the user data
-	accessToken, err := auth.GenerateAccessToken(result["id"].(int64), jwtPayload)
+	accessToken, err := auth.GenerateAccessToken(result["id"].(string), jwtPayload)
 	if err != nil {
 		logger.Log().Error(err.Error())
 		response.ServerErrorJson(w)
@@ -159,7 +159,7 @@ func (controller *AuthController) Login(w http.ResponseWriter, r *http.Request) 
 	}
 
 	// Generate refresh token using the user data
-	refreshToken, err := auth.GenerateRefreshToken(result["id"].(int64), jwtPayload)
+	refreshToken, err := auth.GenerateRefreshToken(result["id"].(string), jwtPayload)
 	if err != nil {
 		logger.Log().Error(err.Error())
 		response.ServerErrorJson(w)
@@ -197,14 +197,14 @@ func (c *AuthController) RefreshAccessToken(w http.ResponseWriter, r *http.Reque
 		return
 	}
 
-	userId, ok := userIdRaw.(float64)
+	userId, ok := userIdRaw.(string)
 	if !ok {
 		response.ErrorJson(w, "Invalid user ID", "invalid_user_id", http.StatusUnauthorized)
 		return
 	}
 
 	// Generate a new access token using the user ID and claims
-	accessToken, err := auth.GenerateAccessToken(int64(userId), token.Payload)
+	accessToken, err := auth.GenerateAccessToken(userId, token.Payload)
 	if err != nil {
 		response.ErrorJson(w, "Failed to generate new access token", "access_token_error", http.StatusInternalServerError)
 		return

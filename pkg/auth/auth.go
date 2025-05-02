@@ -17,7 +17,7 @@ const (
 )
 
 // generate new refresh token, refresh token is used to generate new access token long lived tokens (7 days)
-func GenerateRefreshToken(userID int64, claims map[string]any) (string, error) {
+func GenerateRefreshToken(userID string, claims map[string]any) (string, error) {
 	refreshTokenExpirationTime := config.App.Get("app.auth.refresh_token_expiry").(time.Duration)
 	secret := config.App.Get("app.secret").(string)
 	payload := map[string]any{
@@ -36,7 +36,7 @@ func GenerateRefreshToken(userID int64, claims map[string]any) (string, error) {
 }
 
 // generate new access token, access token is used to authenticate user they are short lived tokens and need to be refreshed every 15 minutes
-func GenerateAccessToken(userID int64, claims map[string]any) (string, error) {
+func GenerateAccessToken(userID string, claims map[string]any) (string, error) {
 	accessTokenExpirationTime := config.App.Get("app.auth.access_token_expiry").(time.Duration)
 	secret := config.App.Get("app.secret").(string)
 	payload := map[string]any{
@@ -85,7 +85,7 @@ func ValidateAuthToken(jwtToken string, tokenType AuthTokenType) (*jwt.JWT, erro
 		return nil, errors.New("missing expiration field")
 	}
 
-	expirationTime := time.Unix(int64(exp.(float64)), 0)
+	expirationTime := time.Unix(exp.(int64), 0)
 	if time.Now().After(expirationTime) {
 		return nil, fmt.Errorf("expired %s token", string(tokenType))
 	}

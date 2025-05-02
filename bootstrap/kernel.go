@@ -10,6 +10,7 @@ import (
 	"imohamedsheta/gocrud/pkg/validate"
 	"imohamedsheta/gocrud/routes"
 	"log"
+	"net"
 	"net/http"
 	"os"
 	"os/signal"
@@ -17,6 +18,7 @@ import (
 	"time"
 
 	"github.com/joho/godotenv"
+	"google.golang.org/grpc"
 )
 
 /*
@@ -79,6 +81,9 @@ func startHttpServer() {
 	// Listen for OS signals for graceful shutdown
 	quit := make(chan os.Signal, 1)
 	signal.Notify(quit, os.Interrupt, syscall.SIGTERM)
+
+	grpcServer, grpcListener := startGrpcServer()
+
 	<-quit
 
 	log.Println(enums.Yellow.Value() + "Shutting down server..." + enums.Reset.Value())
@@ -91,7 +96,37 @@ func startHttpServer() {
 		log.Fatal(enums.Red.Value() + "Forced to shutdown: " + err.Error() + enums.Reset.Value())
 	}
 
+	// Graceful shutdown for gRPC
+	go func() {
+		grpcServer.GracefulStop()
+		grpcListener.Close()
+	}()
+
 	log.Println(enums.Green.Value() + "Server exited properly" + enums.Reset.Value())
+}
+
+func startGrpcServer() (*grpc.Server, net.Listener) {
+	url := "127.0.0.1"
+	port := "50051"
+
+	listener, err := net.Listen("tcp", url+":"+port)
+	if err != nil {
+		log.Fatalf("Failed to listen: %v", err)
+	}
+
+	var opts []grpc.ServerOption
+	grpcServer := grpc.NewServer(opts...)
+
+	routes.LoadGrpcRoutes(grpcServer)
+
+	go func() {
+		log.Println(enums.Yellow.Value() + "Starting gRPC server on tcp://" + url + ":" + port + enums.Reset.Value())
+		if err := grpcServer.Serve(listener); err != nil {
+			log.Fatalf("Failed to serve gRPC: %v", err)
+		}
+	}()
+
+	return grpcServer, listener
 }
 
 // Execute CLI command
