@@ -2,7 +2,8 @@ package helpers
 
 import (
 	"fmt"
-	"imohamedsheta/gocrud/pkg/enums"
+
+	"github.com/iMohamedSheta/xapp/pkg/enums"
 )
 
 func LogConsoleError(err any) {

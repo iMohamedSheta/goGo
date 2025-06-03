@@ -2,17 +2,18 @@ package controllers
 
 import (
 	"encoding/json"
-	"imohamedsheta/gocrud/app/models"
-	"imohamedsheta/gocrud/app/requests"
-	"imohamedsheta/gocrud/pkg/auth"
-	"imohamedsheta/gocrud/pkg/encrypt"
-	"imohamedsheta/gocrud/pkg/logger"
-	"imohamedsheta/gocrud/pkg/response"
-	"imohamedsheta/gocrud/pkg/validate"
-	"imohamedsheta/gocrud/query"
 	"net/http"
 	"strings"
 	"time"
+
+	"github.com/iMohamedSheta/xapp/app/models"
+	"github.com/iMohamedSheta/xapp/app/requests"
+	"github.com/iMohamedSheta/xapp/pkg/auth"
+	"github.com/iMohamedSheta/xapp/pkg/encrypt"
+	"github.com/iMohamedSheta/xapp/pkg/logger"
+	"github.com/iMohamedSheta/xapp/pkg/query"
+	"github.com/iMohamedSheta/xapp/pkg/response"
+	"github.com/iMohamedSheta/xapp/pkg/validate"
 )
 
 type AuthController struct{}

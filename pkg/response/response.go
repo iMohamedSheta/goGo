@@ -2,8 +2,9 @@ package response
 
 import (
 	"encoding/json"
-	"imohamedsheta/gocrud/pkg/logger"
 	"net/http"
+
+	"github.com/iMohamedSheta/xapp/pkg/logger"
 )
 
 // Struct for standard JSON response

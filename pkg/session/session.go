@@ -3,6 +3,7 @@ package session
 import (
 	"crypto/rand"
 	"encoding/base64"
+	"sync"
 	"time"
 )
 
@@ -10,6 +11,7 @@ type Session struct {
 	createdAt    time.Time
 	lastActivity time.Time
 	id           string
+	mu           sync.RWMutex // Add mutex to protect data
 	data         map[string]any
 }
 
@@ -59,17 +61,25 @@ func NewSession() (*Session, error) {
 }
 
 func (s *Session) Set(key string, value any) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
 	s.data[key] = value
 }
 
 func (s *Session) Get(key string) any {
+	s.mu.RLock()
+	defer s.mu.RUnlock()
 	return s.data[key]
 }
 
 func (s *Session) Delete(key string) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
 	delete(s.data, key)
 }
 
 func (s *Session) UpdateLastActivity() {
+	s.mu.Lock()
+	defer s.mu.Unlock()
 	s.lastActivity = time.Now()
 }

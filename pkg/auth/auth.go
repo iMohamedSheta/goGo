@@ -3,10 +3,11 @@ package auth
 import (
 	"errors"
 	"fmt"
-	"imohamedsheta/gocrud/pkg/config"
-	"imohamedsheta/gocrud/pkg/jwt"
-	"imohamedsheta/gocrud/pkg/logger"
 	"time"
+
+	"github.com/iMohamedSheta/xapp/pkg/config"
+	"github.com/iMohamedSheta/xapp/pkg/jwt"
+	"github.com/iMohamedSheta/xapp/pkg/logger"
 )
 
 type AuthTokenType string
@@ -18,8 +19,16 @@ const (
 
 // generate new refresh token, refresh token is used to generate new access token long lived tokens (7 days)
 func GenerateRefreshToken(userID string, claims map[string]any) (string, error) {
-	refreshTokenExpirationTime := config.App.Get("app.auth.refresh_token_expiry").(time.Duration)
-	secret := config.App.Get("app.secret").(string)
+	refreshTokenExpirationTime, err := config.App.Get("app.auth.refresh_token_expiry")
+	if err != nil {
+		return "", err
+	}
+
+	secret, err := config.App.Get("app.secret")
+	if err != nil {
+		return "", err
+	}
+
 	payload := map[string]any{
 		"user_id": userID,
 		"type":    RefreshToken,
@@ -32,13 +41,21 @@ func GenerateRefreshToken(userID string, claims map[string]any) (string, error) 
 		payload[k] = v
 	}
 
-	return jwt.GenerateJWTToken(payload, secret, refreshTokenExpirationTime)
+	return jwt.GenerateJWTToken(payload, secret.(string), refreshTokenExpirationTime.(time.Duration))
 }
 
 // generate new access token, access token is used to authenticate user they are short lived tokens and need to be refreshed every 15 minutes
 func GenerateAccessToken(userID string, claims map[string]any) (string, error) {
-	accessTokenExpirationTime := config.App.Get("app.auth.access_token_expiry").(time.Duration)
-	secret := config.App.Get("app.secret").(string)
+	accessTokenExpirationTime, err := config.App.Get("app.auth.access_token_expiry")
+	if err != nil {
+		return "", err
+	}
+
+	secret, err := config.App.Get("app.secret")
+	if err != nil {
+		return "", err
+	}
+
 	payload := map[string]any{
 		"user_id": userID,
 		"type":    AccessToken,
@@ -51,14 +68,17 @@ func GenerateAccessToken(userID string, claims map[string]any) (string, error) {
 		payload[k] = v
 	}
 
-	return jwt.GenerateJWTToken(payload, secret, accessTokenExpirationTime)
+	return jwt.GenerateJWTToken(payload, secret.(string), accessTokenExpirationTime.(time.Duration))
 }
 
 // ValidateRefreshToken validates the refresh token and returns the decoded JWT token
 func ValidateAuthToken(jwtToken string, tokenType AuthTokenType) (*jwt.JWT, error) {
-	secret := config.App.Get("app.secret").(string)
+	secret, err := config.App.Get("app.secret")
+	if err != nil {
+		return nil, err
+	}
 
-	valid, err := jwt.Verify(jwtToken, secret)
+	valid, err := jwt.Verify(jwtToken, secret.(string))
 	if err != nil || !valid {
 
 		return nil, fmt.Errorf("invalid %s token", string(tokenType))

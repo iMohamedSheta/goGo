@@ -2,6 +2,7 @@ package router
 
 import (
 	"net/http"
+	"sync"
 
 	"github.com/gorilla/mux"
 )
@@ -11,15 +12,19 @@ type Router struct {
 	*mux.Router
 }
 
-var router *Router
+var (
+	router     *Router
+	routerOnce sync.Once
+)
 
-// return the router instance
+// Instance returns the singleton router instance
+// It is thread-safe and will only initialize the router once
 func Instance() *Router {
-	if router == nil {
+	routerOnce.Do(func() {
 		router = &Router{
 			Router: mux.NewRouter(),
 		}
-	}
+	})
 	return router
 }
 

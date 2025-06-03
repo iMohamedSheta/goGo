@@ -1,9 +1,17 @@
 package support
 
 func IsDev() bool {
-	return Config("app.env") == "dev"
+	isDev, err := Config("app.env")
+	if err != nil {
+		return false
+	}
+	return isDev == "dev"
 }
 
 func IsProd() bool {
-	return Config("app.env") == "prod"
+	isProd, err := Config("app.env")
+	if err != nil {
+		return false
+	}
+	return isProd == "prod"
 }

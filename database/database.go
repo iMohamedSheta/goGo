@@ -2,8 +2,11 @@ package database
 
 import (
 	"fmt"
-	"imohamedsheta/gocrud/pkg/config"
 	"log"
+	"time"
+
+	"github.com/iMohamedSheta/xapp/pkg/config"
+	"github.com/iMohamedSheta/xapp/pkg/logger"
 
 	_ "github.com/go-sql-driver/mysql"
 	"github.com/jmoiron/sqlx"
@@ -13,7 +16,13 @@ import (
 var db *sqlx.DB
 
 func Connect() {
-	config := config.App.Get("database").(map[string]any)
+	configRaw, err := config.App.Get("database")
+	if err != nil {
+		logger.Log().Error(err.Error())
+	}
+
+	config := configRaw.(map[string]any)
+
 	defaultDatabaseConnection := config["default"].(string)
 	connectionConfig := config["connections"].(map[string]any)[defaultDatabaseConnection].(map[string]any)
 	driver := connectionConfig["driver"].(string)
@@ -44,13 +53,17 @@ func Connect() {
 		log.Fatalf("❌ Unsupported database driver: %s", driver)
 	}
 
-	var err error
-
 	db, err = sqlx.Open(driver, dsn)
 
 	if err != nil {
 		log.Fatalf("❌ Failed to connect to database: %s", err)
 	}
+
+	// Set connection pool settings
+	db.SetMaxOpenConns(25)                 // Maximum number of open connections to the database
+	db.SetMaxIdleConns(25)                 // Maximum number of connections in the idle connection pool
+	db.SetConnMaxLifetime(5 * time.Minute) // Maximum amount of time a connection may be reused
+	db.SetConnMaxIdleTime(5 * time.Minute) // Maximum amount of time a connection may be idle
 
 	if err = db.Ping(); err != nil {
 		log.Fatalf("❌ Failed to ping database:  %s", err)

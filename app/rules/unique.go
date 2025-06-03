@@ -1,9 +1,10 @@
 package rules
 
 import (
-	"imohamedsheta/gocrud/database"
-	"imohamedsheta/gocrud/pkg/logger"
 	"strings"
+
+	"github.com/iMohamedSheta/xapp/database"
+	"github.com/iMohamedSheta/xapp/pkg/logger"
 
 	"github.com/go-playground/validator/v10"
 )

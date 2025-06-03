@@ -2,7 +2,8 @@ package support
 
 import (
 	"fmt"
-	"imohamedsheta/gocrud/pkg/enums"
+
+	"github.com/iMohamedSheta/xapp/pkg/enums"
 )
 
 // showHowToUse shows how to use the application

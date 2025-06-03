@@ -3,10 +3,11 @@ package query
 import (
 	"database/sql"
 	"fmt"
-	"imohamedsheta/gocrud/database"
-	"imohamedsheta/gocrud/pkg/logger"
 	"math"
 	"strings"
+
+	"github.com/iMohamedSheta/xapp/database"
+	"github.com/iMohamedSheta/xapp/pkg/logger"
 
 	"github.com/jmoiron/sqlx"
 )

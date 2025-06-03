@@ -1,9 +1,9 @@
 package routes
 
 import (
-	"imohamedsheta/gocrud/app/controllers"
-	"imohamedsheta/gocrud/app/middlewares"
-	"imohamedsheta/gocrud/pkg/router"
+	"github.com/iMohamedSheta/xapp/app/controllers"
+	"github.com/iMohamedSheta/xapp/app/middlewares"
+	"github.com/iMohamedSheta/xapp/pkg/router"
 
 	"github.com/gorilla/mux"
 )

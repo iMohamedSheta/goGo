@@ -2,12 +2,13 @@ package middlewares
 
 import (
 	"context"
-	"imohamedsheta/gocrud/app/enums"
-	"imohamedsheta/gocrud/pkg/auth"
-	"imohamedsheta/gocrud/pkg/logger"
-	"imohamedsheta/gocrud/pkg/response"
 	"net/http"
 	"strings"
+
+	"github.com/iMohamedSheta/xapp/app/enums"
+	"github.com/iMohamedSheta/xapp/pkg/auth"
+	"github.com/iMohamedSheta/xapp/pkg/logger"
+	"github.com/iMohamedSheta/xapp/pkg/response"
 
 	"go.uber.org/zap/zapcore"
 )

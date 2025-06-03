@@ -1,9 +1,10 @@
 package middlewares
 
 import (
-	"imohamedsheta/gocrud/pkg/response"
 	"net/http"
 	"strings"
+
+	"github.com/iMohamedSheta/xapp/pkg/response"
 )
 
 func JSONContentTypeMiddleware() func(next http.Handler) http.Handler {

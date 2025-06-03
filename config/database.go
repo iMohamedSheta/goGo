@@ -1,8 +1,12 @@
 package config
 
-import "imohamedsheta/gocrud/pkg/config"
+import "github.com/iMohamedSheta/xapp/pkg/config"
 
-func LoadDatabaseConfig() {
+func init() {
+	config.Register(databaseConfig)
+}
+
+func databaseConfig() {
 	config.App.Set("database", map[string]any{
 
 		// This is the default database connection should be valid connection to use.

@@ -1,12 +1,19 @@
 package validate
 
-import "github.com/go-playground/validator/v10"
+import (
+	"sync"
 
-var validatorInstance *validator.Validate
+	"github.com/go-playground/validator/v10"
+)
+
+var (
+	validatorInstance *validator.Validate
+	once              sync.Once
+)
 
 func Validator() *validator.Validate {
-	if validatorInstance == nil {
+	once.Do(func() {
 		validatorInstance = validator.New()
-	}
+	})
 	return validatorInstance
 }

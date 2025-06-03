@@ -2,7 +2,8 @@ package routes
 
 import (
 	"context"
-	sheta "imohamedsheta/gocrud/grpc/v1/sheta/proto"
+
+	hello "github.com/iMohamedSheta/xapp/grpc/v1/hello/proto"
 
 	"google.golang.org/grpc"
 )
@@ -11,15 +12,15 @@ func LoadGrpcRoutes(grpcServer *grpc.Server) {
 	// Here you can register your grpc routes
 	// e.g.
 	// grpc.RegisterGreeterServer(s, &server.Server{})
-	sheta.RegisterSayShetaServer(grpcServer, &SayShetaRealService{})
+	hello.RegisterHelloServer(grpcServer, &SayShetaRealService{})
 }
 
 type SayShetaRealService struct {
-	sheta.UnimplementedSayShetaServer
+	hello.UnimplementedHelloServer
 }
 
-func (s *SayShetaRealService) SaySheta(ctx context.Context, req *sheta.SayShetaRequest) (*sheta.SayShetaResponse, error) {
-	return &sheta.SayShetaResponse{
+func (s *SayShetaRealService) SaySheta(ctx context.Context, req *hello.HelloRequest) (*hello.HelloResponse, error) {
+	return &hello.HelloResponse{
 		Message: "Hello " + req.Name,
 	}, nil
 }

@@ -2,9 +2,10 @@ package query
 
 import (
 	"errors"
-	"imohamedsheta/gocrud/pkg/logger"
 	"reflect"
 	"slices"
+
+	"github.com/iMohamedSheta/xapp/pkg/logger"
 )
 
 func GetStructFieldNames(tableStruct any) []string {

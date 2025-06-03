@@ -1,8 +1,12 @@
 package config
 
-import "imohamedsheta/gocrud/pkg/config"
+import "github.com/iMohamedSheta/xapp/pkg/config"
 
-func LoadLogConfig() {
+func init() {
+	config.Register(logConfig)
+}
+
+func logConfig() {
 	config.App.Set("log", map[string]any{
 		"default": "app",
 

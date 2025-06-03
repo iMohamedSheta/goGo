@@ -2,13 +2,6 @@ package bootstrap
 
 import (
 	"context"
-	"imohamedsheta/gocrud/database"
-	"imohamedsheta/gocrud/pkg/cmd"
-	"imohamedsheta/gocrud/pkg/config"
-	"imohamedsheta/gocrud/pkg/enums"
-	"imohamedsheta/gocrud/pkg/logger"
-	"imohamedsheta/gocrud/pkg/validate"
-	"imohamedsheta/gocrud/routes"
 	"log"
 	"net"
 	"net/http"
@@ -16,6 +9,14 @@ import (
 	"os/signal"
 	"syscall"
 	"time"
+
+	"github.com/iMohamedSheta/xapp/database"
+	"github.com/iMohamedSheta/xapp/pkg/cmd"
+	"github.com/iMohamedSheta/xapp/pkg/config"
+	"github.com/iMohamedSheta/xapp/pkg/enums"
+	"github.com/iMohamedSheta/xapp/pkg/logger"
+	"github.com/iMohamedSheta/xapp/pkg/validate"
+	"github.com/iMohamedSheta/xapp/routes"
 
 	"github.com/joho/godotenv"
 	"google.golang.org/grpc"
@@ -44,7 +45,7 @@ import (
 // Load application (env, config, DB, logger, validation)
 func Load() {
 	loadEnvConfig()
-	loadConfig()
+	config.LoadAll()
 	loadDatabaseConnection()
 	logger.LoadLogger()
 	loadValidation()
@@ -61,9 +62,12 @@ func Run() {
 
 // Start the HTTP server with graceful shutdown
 func startHttpServer() {
-	shutdown_timeout := config.App.Get("app.shutdown_timeout").(time.Duration)
-	url := config.App.Get("app.url").(string)
-	port := config.App.Get("app.port").(string)
+
+	shutdown_timeout := config.App.GetDuration("app.shutdown_timeout", 10*time.Second)
+
+	url := config.App.GetString("app.url", "localhost")
+
+	port := config.App.GetString("app.port", "8080")
 
 	srv := &http.Server{
 		Addr:    url + ":" + port,
@@ -81,8 +85,16 @@ func startHttpServer() {
 	// Listen for OS signals for graceful shutdown
 	quit := make(chan os.Signal, 1)
 	signal.Notify(quit, os.Interrupt, syscall.SIGTERM)
+	grpcEnabled := config.App.GetBool("app.grpc.enabled", false)
 
-	grpcServer, grpcListener := startGrpcServer()
+	var grpcServer *grpc.Server
+	var grpcListener net.Listener
+
+	if grpcEnabled {
+		grpcUrl := config.App.GetString("app.grpc.url", "localhost")
+		grpcPort := config.App.GetString("app.grpc.port", "50051")
+		grpcServer, grpcListener = startGrpcServer(grpcUrl, grpcPort)
+	}
 
 	<-quit
 
@@ -96,18 +108,19 @@ func startHttpServer() {
 		log.Fatal(enums.Red.Value() + "Forced to shutdown: " + err.Error() + enums.Reset.Value())
 	}
 
-	// Graceful shutdown for gRPC
-	go func() {
-		grpcServer.GracefulStop()
-		grpcListener.Close()
-	}()
+	if grpcEnabled {
+		// Graceful shutdown for gRPC
+		go func() {
+			grpcServer.GracefulStop()
+			grpcListener.Close()
+		}()
+
+	}
 
 	log.Println(enums.Green.Value() + "Server exited properly" + enums.Reset.Value())
 }
 
-func startGrpcServer() (*grpc.Server, net.Listener) {
-	url := "127.0.0.1"
-	port := "50051"
+func startGrpcServer(url string, port string) (*grpc.Server, net.Listener) {
 
 	listener, err := net.Listen("tcp", url+":"+port)
 	if err != nil {

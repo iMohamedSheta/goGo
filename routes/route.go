@@ -1,9 +1,9 @@
 package routes
 
 import (
-	"imohamedsheta/gocrud/pkg/helpers"
-	"imohamedsheta/gocrud/pkg/router"
-	"imohamedsheta/gocrud/pkg/support"
+	"github.com/iMohamedSheta/xapp/pkg/helpers"
+	"github.com/iMohamedSheta/xapp/pkg/router"
+	"github.com/iMohamedSheta/xapp/pkg/support"
 )
 
 // RegisterRoutes registers all routes for the application.

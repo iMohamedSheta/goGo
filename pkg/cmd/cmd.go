@@ -2,9 +2,10 @@ package cmd
 
 import (
 	"fmt"
-	"imohamedsheta/gocrud/pkg/logger"
-	s "imohamedsheta/gocrud/pkg/support"
 	"os"
+
+	"github.com/iMohamedSheta/xapp/pkg/logger"
+	s "github.com/iMohamedSheta/xapp/pkg/support"
 
 	"github.com/spf13/cobra"
 )

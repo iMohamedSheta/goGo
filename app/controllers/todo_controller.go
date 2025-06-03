@@ -2,15 +2,16 @@ package controllers
 
 import (
 	"encoding/json"
-	"imohamedsheta/gocrud/app/enums"
-	"imohamedsheta/gocrud/app/repository"
-	"imohamedsheta/gocrud/app/requests"
-	"imohamedsheta/gocrud/pkg/logger"
-	"imohamedsheta/gocrud/pkg/response"
-	"imohamedsheta/gocrud/pkg/validate"
 	"net/http"
 	"strconv"
 	"time"
+
+	"github.com/iMohamedSheta/xapp/app/enums"
+	"github.com/iMohamedSheta/xapp/app/repository"
+	"github.com/iMohamedSheta/xapp/app/requests"
+	"github.com/iMohamedSheta/xapp/pkg/logger"
+	"github.com/iMohamedSheta/xapp/pkg/response"
+	"github.com/iMohamedSheta/xapp/pkg/validate"
 
 	"github.com/gorilla/mux"
 )

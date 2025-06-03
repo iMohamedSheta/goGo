@@ -2,7 +2,8 @@ package validate
 
 import (
 	"fmt"
-	"imohamedsheta/gocrud/pkg/contracts"
+
+	"github.com/iMohamedSheta/xapp/pkg/contracts"
 
 	"github.com/go-playground/validator/v10"
 )

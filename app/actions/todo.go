@@ -1,10 +1,11 @@
 package actions
 
 import (
-	"imohamedsheta/gocrud/pkg/logger"
-	"imohamedsheta/gocrud/pkg/response"
-	"imohamedsheta/gocrud/query"
 	"net/http"
+
+	"github.com/iMohamedSheta/xapp/pkg/logger"
+	"github.com/iMohamedSheta/xapp/pkg/response"
+	"github.com/iMohamedSheta/xapp/query"
 )
 
 type TodoAction struct{}

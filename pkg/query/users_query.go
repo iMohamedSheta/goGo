@@ -2,11 +2,11 @@ package query
 
 import (
 	"fmt"
-	"imohamedsheta/gocrud/app/models"
-	"imohamedsheta/gocrud/database"
-	"imohamedsheta/gocrud/pkg/logger"
-	"imohamedsheta/gocrud/pkg/query"
 	"strings"
+
+	"github.com/iMohamedSheta/xapp/app/models"
+	"github.com/iMohamedSheta/xapp/database"
+	"github.com/iMohamedSheta/xapp/pkg/logger"
 )
 
 type usersTable []models.User
@@ -24,7 +24,7 @@ func (u *usersTable) GetSql(columns ...string) string {
 		return "SELECT * FROM users"
 	}
 
-	validColumns, err := query.ValidateColumns(models.User{}, columns)
+	validColumns, err := ValidateColumns(models.User{}, columns)
 
 	if err != nil {
 		return ""
